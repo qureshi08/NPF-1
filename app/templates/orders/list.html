@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Orders Management</h1>
+    <a href="{{ url_for('main.create_order') }}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>New Order</a>
+</div>
+
+<!-- Filter -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <form method="GET">
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                <option value="Pending" {{ 'selected' if status_filter=='Pending' else '' }}>Pending</option>
+                <option value="Processing" {{ 'selected' if status_filter=='Processing' else '' }}>Processing</option>
+                <option value="Shipped" {{ 'selected' if status_filter=='Shipped' else '' }}>Shipped</option>
+                <option value="Delivered" {{ 'selected' if status_filter=='Delivered' else '' }}>Delivered</option>
+                <option value="Cancelled" {{ 'selected' if status_filter=='Cancelled' else '' }}>Cancelled</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>Total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders.items %}
+                    <tr>
+                        <td><strong>#{{ order.id }}</strong></td>
+                        <td>{{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ order.customer.name if order.customer else 'Unknown' }}</td>
+                        <td>
+                            {% if order.status == 'Pending' %}
+                            <span class="badge bg-warning text-dark">{{ order.status }}</span>
+                            {% elif order.status == 'Processing' %}
+                            <span class="badge bg-info">{{ order.status }}</span>
+                            {% elif order.status == 'Shipped' %}
+                            <span class="badge bg-primary">{{ order.status }}</span>
+                            {% elif order.status == 'Delivered' %}
+                            <span class="badge bg-success">{{ order.status }}</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ order.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if order.payment_status == 'Paid' %}
+                            <span class="badge bg-success">{{ order.payment_status }}</span>
+                            {% elif order.payment_status == 'Partial' %}
+                            <span class="badge bg-warning text-dark">{{ order.payment_status }}</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ order.payment_status }}</span>
+                            {% endif %}
+                        </td>
+                        <td><strong>PKR {{ "{:,.0f}".format(order.total_amount) }}</strong></td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ url_for('main.view_order', id=order.id) }}" class="btn btn-outline-info"
+                                    title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('main.download_invoice', id=order.id) }}"
+                                    class="btn btn-outline-success" title="Download Invoice">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                                <a href="{{ url_for('main.edit_order', id=order.id) }}" class="btn btn-outline-primary"
+                                    title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if current_user.role == 'Admin' %}
+                                <form action="{{ url_for('main.delete_order', id=order.id) }}" method="POST"
+                                    style="display:inline;" onsubmit="return confirm('Delete Order #{{ order.id }}?');">
+                                    <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">No orders found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if orders.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {{ 'disabled' if not orders.has_prev else '' }}">
+                    <a class="page-link"
+                        href="{{ url_for('main.orders', page=orders.prev_num, status=status_filter) }}">Previous</a>
+                </li>
+                {% for page_num in orders.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                <li class="page-item {{ 'active' if page_num == orders.page else '' }}">
+                    <a class="page-link" href="{{ url_for('main.orders', page=page_num, status=status_filter) }}">{{
+                        page_num }}</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                {% endfor %}
+                <li class="page-item {{ 'disabled' if not orders.has_next else '' }}">
+                    <a class="page-link"
+                        href="{{ url_for('main.orders', page=orders.next_num, status=status_filter) }}">Next</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Summary -->
+<div class="row mt-3">
+    <div class="col-md-12">
+        <div class="alert alert-info">
+            <strong>Total Orders:</strong> {{ orders.total }}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Finance & Accounting</h1>
+    <a href="{{ url_for('main.add_transaction') }}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Record
+        Transaction</a>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-success shadow-sm">
+            <div class="card-body">
+                <h6 class="text-success"><i class="fas fa-arrow-up me-2"></i>Total Income</h6>
+                <h3 class="mb-0">PKR {{ "{:,.0f}".format(total_income) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-danger shadow-sm">
+            <div class="card-body">
+                <h6 class="text-danger"><i class="fas fa-arrow-down me-2"></i>Total Expenses</h6>
+                <h3 class="mb-0">PKR {{ "{:,.0f}".format(total_expense) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-primary shadow-sm">
+            <div class="card-body">
+                <h6 class="text-primary"><i class="fas fa-chart-line me-2"></i>Net Profit</h6>
+                <h3 class="mb-0 {{ 'text-success' if net_profit >= 0 else 'text-danger' }}">PKR {{
+                    "{:,.0f}".format(net_profit) }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <form method="GET">
+            <select name="type" class="form-select" onchange="this.form.submit()">
+                <option value="">All Transactions</option>
+                <option value="Income" {{ 'selected' if type_filter=='Income' else '' }}>Income Only</option>
+                <option value="Expense" {{ 'selected' if type_filter=='Expense' else '' }}>Expenses Only</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Related Order</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for txn in transactions.items %}
+                    <tr>
+                        <td>{{ txn.date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if txn.type == 'Income' %}
+                            <span class="badge bg-success"><i class="fas fa-arrow-up me-1"></i>{{ txn.type }}</span>
+                            {% else %}
+                            <span class="badge bg-danger"><i class="fas fa-arrow-down me-1"></i>{{ txn.type }}</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary">{{ txn.category }}</span></td>
+                        <td>{{ txn.description or '-' }}</td>
+                        <td><strong>PKR {{ "{:,.0f}".format(txn.amount) }}</strong></td>
+                        <td>
+                            {% if txn.related_order_id %}
+                            <a href="{{ url_for('main.view_order', id=txn.related_order_id) }}"
+                                class="btn btn-sm btn-outline-info">
+                                Order #{{ txn.related_order_id }}
+                            </a>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ url_for('main.edit_transaction', id=txn.id) }}"
+                                    class="btn btn-outline-primary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if current_user.role == 'Admin' %}
+                                <form action="{{ url_for('main.delete_transaction', id=txn.id) }}" method="POST"
+                                    style="display:inline;" onsubmit="return confirm('Delete this transaction?');">
+                                    <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">No transactions found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if transactions.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {{ 'disabled' if not transactions.has_prev else '' }}">
+                    <a class="page-link"
+                        href="{{ url_for('main.finance', page=transactions.prev_num, type=type_filter) }}">Previous</a>
+                </li>
+                {% for page_num in transactions.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2)
+                %}
+                {% if page_num %}
+                <li class="page-item {{ 'active' if page_num == transactions.page else '' }}">
+                    <a class="page-link" href="{{ url_for('main.finance', page=page_num, type=type_filter) }}">{{
+                        page_num }}</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                {% endfor %}
+                <li class="page-item {{ 'disabled' if not transactions.has_next else '' }}">
+                    <a class="page-link"
+                        href="{{ url_for('main.finance', page=transactions.next_num, type=type_filter) }}">Next</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Note -->
+<div class="alert alert-info mt-3">
+    <i class="fas fa-info-circle me-2"></i><strong>Note:</strong> Transactions are automatically created when orders are
+    marked as "Paid". You can also manually record expenses like rent, utilities, and salaries here.
+</div>
+{% endblock %}

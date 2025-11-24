@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Settings</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Categories</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('main.add_category') }}" method="POST" class="mb-3">
+                    <div class="row g-2">
+                        <div class="col-md-5">
+                            <input type="text" name="name" class="form-control" placeholder="Category Name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <select name="type" class="form-select">
+                                <option value="Product">Product</option>
+                                <option value="Material">Material</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-success w-100">Add</button>
+                        </div>
+                    </div>
+                </form>
+
+                <ul class="list-group">
+                    {% for category in categories %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ category.name }}
+                        <div>
+                            <span class="badge bg-secondary">{{ category.type }}</span>
+                            <form action="{{ url_for('main.delete_category', id=category.id) }}" method="POST"
+                                style="display:inline;" onsubmit="return confirm('Delete this category?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger ms-2">Delete</button>
+                            </form>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">System Users</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td><span class="badge bg-primary">{{ user.role }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Business Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Business Name:</strong> New Pindi Furniture</p>
+                <p><strong>Address:</strong> Rawalpindi, Pakistan</p>
+                <p><strong>Phone:</strong> +92-XXX-XXXXXXX</p>
+                <p><strong>Email:</strong> info@newpindifurniture.com</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-pie me-2 text-primary"></i>Business Reports</h2>
+    <div class="btn-group">
+        <a href="{{ url_for('main.export_products') }}" class="btn btn-outline-success"><i
+                class="fas fa-file-excel me-2"></i>Export Products</a>
+        <a href="{{ url_for('main.export_orders') }}" class="btn btn-outline-primary"><i
+                class="fas fa-file-excel me-2"></i>Export Orders</a>
+        <a href="{{ url_for('main.export_transactions') }}" class="btn btn-outline-info"><i
+                class="fas fa-file-excel me-2"></i>Export Finance</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Sales Trend Chart -->
+    <div class="col-md-8">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Sales Trend (Last 30 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Products Chart -->
+    <div class="col-md-4">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Top 5 Products (Revenue)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="productsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Top Selling Products Table -->
+    <div class="col-md-6">
+        <div class="card card-custom mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Top Selling Products Details</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th class="text-center">Sold</th>
+                                <th class="text-end">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in top_products %}
+                            <tr>
+                                <td class="fw-bold">{{ product.name }}</td>
+                                <td class="text-center"><span class="badge bg-info rounded-pill">{{ product.quantity
+                                        }}</span></td>
+                                <td class="text-end text-success fw-bold">PKR {{ "{:,.0f}".format(product.revenue) }}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center py-3 text-muted">No sales data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alert -->
+    <div class="col-md-6">
+        <div class="card card-custom mb-4 border-warning">
+            <div class="card-header bg-warning bg-opacity-10 text-warning">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Low Stock Alerts</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th class="text-center">Stock</th>
+                                <th class="text-center">Reorder Level</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in low_stock %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td class="text-center"><span class="badge bg-danger">{{ item.stock_quantity }}</span>
+                                </td>
+                                <td class="text-center">{{ item.reorder_level }}</td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('main.edit_product', id=item.id) }}"
+                                        class="btn btn-sm btn-outline-primary">Restock</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-3 text-success">
+                                    <i class="fas fa-check-circle me-2"></i>All stock levels healthy
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Sales Chart
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: {{ dates | tojson }},
+        datasets: [{
+            label: 'Sales (PKR)',
+            data: {{ amounts | tojson }},
+        borderColor: '#0d6efd',
+        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+        tension: 0.4,
+        fill: true
+            }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { borderDash: [2, 4] }
+            },
+            x: {
+                grid: { display: false }
+            }
+        }
+    }
+    });
+
+    // Top Products Chart
+    const productsCtx = document.getElementById('productsChart').getContext('2d');
+    new Chart(productsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for p in top_products[: 5] %}"{{ p.name }}", {% endfor %}],
+        datasets: [{
+            data: [{% for p in top_products[: 5] %}{{ p.revenue }}, {% endfor %}],
+        backgroundColor: [
+        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'
+    ],
+        hoverOffset: 4
+            }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { boxWidth: 12 }
+            }
+        }
+    }
+    });
+</script>
+{% endblock %}

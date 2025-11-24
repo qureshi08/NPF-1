@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{{ customer.name }}</h1>
+    <a href="{{ url_for('main.customers') }}" class="btn btn-secondary">Back to Customers</a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h5>Customer Details</h5>
+            <p><strong>Phone:</strong> {{ customer.phone }}</p>
+            <p><strong>Email:</strong> {{ customer.email }}</p>
+            <p><strong>Address:</strong> {{ customer.address }}</p>
+            <p><strong>Loyalty Points:</strong> <span class="badge bg-success">{{ customer.loyalty_points }}</span></p>
+            <p><strong>Member Since:</strong> {{ customer.created_at.strftime('%Y-%m-%d') }}</p>
+        </div>
+    </div>
+</div>
+
+<h3>Order History</h3>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>#{{ order.id }}</td>
+                <td>{{ order.order_date.strftime('%Y-%m-%d') }}</td>
+                <td><span class="badge bg-info">{{ order.status }}</span></td>
+                <td>PKR {{ order.total_amount }}</td>
+                <td><a href="{{ url_for('main.view_order', id=order.id) }}"
+                        class="btn btn-sm btn-outline-primary">View</a></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">No orders yet</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

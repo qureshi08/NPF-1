@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Order #{{ order.id }}</h1>
+    <div>
+        <a href="{{ url_for('main.download_invoice', id=order.id) }}" class="btn btn-success"><i
+                class="fas fa-file-pdf me-2"></i>Download Invoice</a>
+        <a href="{{ url_for('main.edit_order', id=order.id) }}" class="btn btn-primary"><i
+                class="fas fa-edit me-2"></i>Edit Order</a>
+        <a href="{{ url_for('main.orders') }}" class="btn btn-secondary">Back to Orders</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Customer Details</h5>
+            </div>
+            <div class="card-body">
+                {% if order.customer %}
+                <p><strong>Name:</strong> {{ order.customer.name }}</p>
+                <p><strong>Phone:</strong> {{ order.customer.phone }}</p>
+                <p><strong>Email:</strong> {{ order.customer.email or '-' }}</p>
+                <p><strong>Address:</strong> {{ order.customer.address or '-' }}</p>
+                <a href="{{ url_for('main.view_customer', id=order.customer.id) }}"
+                    class="btn btn-sm btn-outline-primary">View Customer Profile</a>
+                {% else %}
+                <p class="text-muted">No customer information</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Order Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Order Date:</strong> {{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>Status:</strong>
+                    {% if order.status == 'Pending' %}
+                    <span class="badge bg-warning text-dark">{{ order.status }}</span>
+                    {% elif order.status == 'Processing' %}
+                    <span class="badge bg-info">{{ order.status }}</span>
+                    {% elif order.status == 'Shipped' %}
+                    <span class="badge bg-primary">{{ order.status }}</span>
+                    {% elif order.status == 'Delivered' %}
+                    <span class="badge bg-success">{{ order.status }}</span>
+                    {% else %}
+                    <span class="badge bg-danger">{{ order.status }}</span>
+                    {% endif %}
+                </p>
+                <p><strong>Payment Status:</strong>
+                    {% if order.payment_status == 'Paid' %}
+                    <span class="badge bg-success">{{ order.payment_status }}</span>
+                    {% elif order.payment_status == 'Partial' %}
+                    <span class="badge bg-warning text-dark">{{ order.payment_status }}</span>
+                    {% else %}
+                    <span class="badge bg-danger">{{ order.payment_status }}</span>
+                    {% endif %}
+                </p>
+                <p><strong>Payment Method:</strong> {{ order.payment_method or '-' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3><i class="fas fa-shopping-cart me-2"></i>Order Items</h3>
+<div class="card mb-4">
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Subtotal</th>
+                    {% if current_user.role in ['Admin', 'Staff'] %}
+                    <th>Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items %}
+                <tr>
+                    <td><strong>{{ item.product.name }}</strong></td>
+                    <td>{{ item.product.sku }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>PKR {{ "{:,.0f}".format(item.unit_price) }}</td>
+                    <td>PKR {{ "{:,.0f}".format(item.subtotal) }}</td>
+                    {% if current_user.role in ['Admin', 'Staff'] %}
+                    <td>
+                        <form action="{{ url_for('main.remove_order_item', order_id=order.id, item_id=item.id) }}"
+                            method="POST" style="display:inline;"
+                            onsubmit="return confirm('Remove {{ item.product.name }} from order?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">No items in this order</td>
+                </tr>
+                {% endfor %}
+                <tr class="table-secondary">
+                    <td colspan="{{ '4' if current_user.role in ['Admin', 'Staff'] else '3' }}" class="text-end">
+                        <strong>Total Amount:</strong>
+                    </td>
+                    <td><strong>PKR {{ "{:,.0f}".format(order.total_amount) }}</strong></td>
+                    {% if current_user.role in ['Admin', 'Staff'] %}
+                    <td></td>
+                    {% endif %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if current_user.role in ['Admin', 'Staff'] %}
+<hr>
+
+<h4><i class="fas fa-plus-circle me-2"></i>Add Item to Order</h4>
+<div class="card">
+    <div class="card-body">
+        <form action="{{ url_for('main.add_order_item', id=order.id) }}" method="POST" class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Product</label>
+                <select name="product_id" class="form-select" required>
+                    <option value="">Select a product...</option>
+                    {% for product in products %}
+                    <option value="{{ product.id }}">
+                        {{ product.name }} (SKU: {{ product.sku }}) - Stock: {{ product.stock_quantity }} - PKR {{
+                        "{:,.0f}".format(product.selling_price) }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Quantity</label>
+                <input type="number" name="quantity" class="form-control" value="1" min="1" required>
+            </div>
+            <div class="col-md-3 align-self-end">
+                <button type="submit" class="btn btn-success w-100"><i class="fas fa-plus me-2"></i>Add Item</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

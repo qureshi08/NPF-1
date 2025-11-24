@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card card-custom shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="mb-0"><i class="fas fa-box me-2 text-primary"></i>{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">SKU</label>
+                            {{ form.sku(class="form-control", placeholder="e.g. SOF-001") }}
+                            {% for error in form.sku.errors %}
+                            <span class="text-danger small">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Product Name</label>
+                            {{ form.name(class="form-control", list="product-names", placeholder="Enter product name")
+                            }}
+                            <datalist id="product-names">
+                                {% for name in all_product_names %}
+                                <option value="{{ name }}">
+                                    {% endfor %}
+                            </datalist>
+                            {% for error in form.name.errors %}
+                            <span class="text-danger small">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Category</label>
+                            {{ form.category_id(class="form-select") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Supplier</label>
+                            {{ form.supplier_id(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        {{ form.description(class="form-control", rows=3) }}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Cost Price (PKR)</label>
+                            {{ form.cost_price(class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Selling Price (PKR)</label>
+                            {{ form.selling_price(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Stock Quantity</label>
+                            {{ form.stock_quantity(class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Reorder Level</label>
+                            {{ form.reorder_level(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Product Image</label>
+                        {{ form.image(class="form-control") }}
+                        {% if product and product.image_url %}
+                        <div class="mt-2">
+                            <small class="text-muted">Current Image:</small><br>
+                            <img src="{{ url_for('static', filename='uploads/' + product.image_url) }}"
+                                alt="Product Image" style="height: 100px; border-radius: 5px;">
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('main.inventory') }}" class="btn btn-light me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-save me-2"></i>Save Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
