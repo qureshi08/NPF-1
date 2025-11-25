@@ -22,6 +22,7 @@
         filter: blur(10px);
         transform: translateY(30px) scale(0.95);
     }
+
     to {
         opacity: 1;
         filter: blur(0);
@@ -36,6 +37,7 @@
         transform: translateX(-40px);
         filter: blur(5px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -45,9 +47,12 @@
 
 /* Premium Glow Pulse */
 @keyframes glowPulse {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 20px rgba(13, 110, 253, 0.2);
     }
+
     50% {
         box-shadow: 0 0 40px rgba(13, 110, 253, 0.4);
     }
@@ -58,6 +63,7 @@
     0% {
         background-position: -200% center;
     }
+
     100% {
         background-position: 200% center;
     }
@@ -69,6 +75,7 @@
         transform: scale(0.9);
         opacity: 0;
     }
+
     to {
         transform: scale(1);
         opacity: 1;
@@ -77,12 +84,16 @@
 
 /* Floating Effect - Subtle */
 @keyframes floatSubtle {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0) rotate(0deg);
     }
+
     25% {
         transform: translateY(-8px) rotate(1deg);
     }
+
     75% {
         transform: translateY(-4px) rotate(-1deg);
     }
@@ -110,12 +121,10 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.6),
-        transparent
-    );
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.6),
+            transparent);
     transition: left 0.8s var(--transition-elegant);
 }
 
@@ -434,7 +443,10 @@ canvas {
    ICON ANIMATIONS - SUBTLE
    ============================================ */
 
-.fa, .fas, .far, .fab {
+.fa,
+.fas,
+.far,
+.fab {
     transition: all 0.3s var(--transition-elegant);
 }
 
@@ -483,38 +495,365 @@ html {
     0% {
         background-position: -200% 0;
     }
+
     100% {
         background-position: 200% 0;
     }
 }
 
 .skeleton {
-    background: linear-gradient(
-        90deg,
-        #f0f0f0 25%,
-        #e0e0e0 50%,
-        #f0f0f0 75%
-    );
+    background: linear-gradient(90deg,
+            #f0f0f0 25%,
+            #e0e0e0 50%,
+            #f0f0f0 75%);
     background-size: 200% 100%;
     animation: skeletonLoading 1.5s ease-in-out infinite;
 }
 
 /* ============================================
-   RESPONSIVE IMPROVEMENTS
+   MOBILE RESPONSIVE DESIGN
    ============================================ */
 
-@media (max-width: 768px) {
+/* Mobile Menu Toggle Button */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1100;
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    border: none;
+    border-radius: 12px;
+    width: 50px;
+    height: 50px;
+    color: white;
+    font-size: 20px;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s var(--transition-elegant);
+}
+
+.mobile-menu-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-xl);
+}
+
+.mobile-menu-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Tablet Styles (768px - 1024px) */
+@media (max-width: 1024px) {
+    .content {
+        margin-left: 240px;
+        padding: 24px;
+    }
+
+    .sidebar {
+        width: 240px;
+    }
+
     .card {
         margin-bottom: 1.5rem;
     }
-    
-    .sidebar a {
-        font-size: 14px;
-        padding: 12px 16px;
+
+    h1 {
+        font-size: 1.75rem;
     }
-    
+
+    h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Mobile Styles (max-width: 768px) */
+@media (max-width: 768px) {
+
+    /* Show mobile menu toggle */
+    .mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Sidebar mobile adjustments */
+    .sidebar {
+        width: 280px;
+        transform: translateX(-100%);
+        transition: transform 0.4s var(--transition-elegant);
+        box-shadow: none;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+        box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Content area without sidebar offset */
+    .content {
+        margin-left: 0;
+        padding: 80px 16px 16px;
+        width: 100%;
+    }
+
+    /* Mobile overlay when sidebar is open */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        backdrop-filter: blur(4px);
+        transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    /* Card adjustments */
+    .card {
+        margin-bottom: 1.5rem;
+        border-radius: 12px;
+    }
+
+    .card:hover {
+        transform: translateY(-4px) scale(1.01);
+    }
+
+    /* Typography scaling */
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.35rem;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+    }
+
+    h4 {
+        font-size: 1.1rem;
+    }
+
+    /* Button adjustments - larger touch targets */
     .btn {
         font-size: 14px;
+        padding: 12px 20px;
+        min-height: 44px;
+    }
+
+    .btn-sm {
+        min-height: 38px;
+        padding: 8px 16px;
+    }
+
+    /* Table responsive */
+    .table-responsive {
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .table {
+        font-size: 14px;
+    }
+
+    .table th,
+    .table td {
+        padding: 12px 8px;
+    }
+
+    /* Form controls - larger for touch */
+    .form-control,
+    .form-select {
+        font-size: 16px;
+        /* Prevents zoom on iOS */
+        min-height: 44px;
+        padding: 10px 14px;
+    }
+
+    .form-label {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    /* Sidebar links - larger touch targets */
+    .sidebar a {
+        font-size: 15px;
+        padding: 16px 20px;
+        min-height: 52px;
+    }
+
+    /* Badge sizing */
+    .badge {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    /* Alert adjustments */
+    .alert {
+        font-size: 14px;
+        padding: 12px 16px;
+        border-radius: 10px;
+    }
+
+    /* Pagination */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .pagination .page-link {
+        min-width: 40px;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    /* Input groups */
+    .input-group {
+        flex-wrap: nowrap;
+    }
+
+    .input-group-text {
+        font-size: 14px;
+    }
+
+    /* Modal adjustments */
+    .modal-dialog {
+        margin: 10px;
+    }
+
+    .modal-content {
+        border-radius: 16px;
+    }
+
+    /* Stats cards in grid */
+    .row.g-4 {
+        gap: 1rem !important;
+    }
+
+    /* Reduce animations on mobile for performance */
+    .card,
+    .btn,
+    .sidebar a {
+        animation-duration: 0.4s;
+    }
+}
+
+/* Small Mobile Styles (max-width: 480px) */
+@media (max-width: 480px) {
+    .content {
+        padding: 70px 12px 12px;
+    }
+
+    .sidebar {
+        width: 260px;
+    }
+
+    h1 {
+        font-size: 1.35rem;
+    }
+
+    h2 {
+        font-size: 1.2rem;
+    }
+
+    .btn {
+        font-size: 13px;
+        padding: 10px 16px;
+    }
+
+    .table {
+        font-size: 12px;
+    }
+
+    .table th,
+    .table td {
+        padding: 10px 6px;
+    }
+
+    .card-body {
+        padding: 16px;
+    }
+
+    .sidebar a {
+        font-size: 14px;
+        padding: 14px 16px;
+    }
+
+    /* Stack buttons vertically on very small screens */
+    .btn-group-vertical {
+        width: 100%;
+    }
+
+    .btn-group-vertical .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    /* Smaller modal */
+    .modal-header,
+    .modal-footer {
+        padding: 12px 16px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    .content {
+        padding: 70px 20px 20px;
+    }
+
+    .sidebar {
+        width: 240px;
+    }
+
+    .sidebar a {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+
+    /* Larger touch targets */
+    .btn,
+    .form-control,
+    .form-select,
+    .sidebar a,
+    .page-link {
+        min-height: 44px;
+    }
+
+    /* Remove hover effects on touch devices */
+    .card:hover {
+        transform: none;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn:hover {
+        transform: none;
+    }
+
+    .sidebar a:hover {
+        padding-left: 20px;
+    }
+
+    /* Tap highlight color */
+    * {
+        -webkit-tap-highlight-color: rgba(13, 110, 253, 0.1);
     }
 }
 
@@ -523,18 +862,19 @@ html {
    ============================================ */
 
 @media print {
+
     .sidebar,
     .btn,
     .pagination {
         display: none;
     }
-    
+
     .card {
         box-shadow: none;
         border: 1px solid #dee2e6;
         animation: none;
     }
-    
+
     * {
         animation: none !important;
         transition: none !important;
@@ -546,6 +886,7 @@ html {
    ============================================ */
 
 @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {
