@@ -217,3 +217,27 @@ def log_action(action, entity_type=None, entity_id=None, details=None):
         print(f"Audit log error: {e}")
         db.session.rollback()
 
+def send_notification(message, user_id=None, type='info', link=None):
+    """
+    Send a notification to a specific user or all admins (if user_id is None).
+    """
+    from app.models import Notification, User
+    from app import db
+    
+    try:
+        if user_id:
+            # Send to specific user
+            notif = Notification(user_id=user_id, message=message, type=type, link=link)
+            db.session.add(notif)
+        else:
+            # Send to all Admins
+            admins = User.query.filter_by(role='Admin').all()
+            for admin in admins:
+                notif = Notification(user_id=admin.id, message=message, type=type, link=link)
+                db.session.add(notif)
+        
+        db.session.commit()
+    except Exception as e:
+        print(f"Notification error: {e}")
+        db.session.rollback()
+

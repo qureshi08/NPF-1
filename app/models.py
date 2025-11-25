@@ -125,3 +125,15 @@ class AuditLog(db.Model):
     
     user = db.relationship('User', backref='audit_logs')
 
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # Null means global notification for all admins
+    message = db.Column(db.String(255), nullable=False)
+    type = db.Column(db.String(20), default='info') # info, success, warning, danger
+    is_read = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    link = db.Column(db.String(200)) # Optional link to related resource (e.g. /orders/5)
+    
+    user = db.relationship('User', backref='notifications')
+
