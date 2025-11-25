@@ -152,6 +152,7 @@ def add_product():
             # Ensure unique filename
             timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
             filename = f"{timestamp}_{filename}"
+            os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
             file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
             image_filename = filename
 
@@ -714,8 +715,28 @@ def edit_transaction(id):
 @role_required('Admin')
 def delete_transaction(id):
     txn = Transaction.query.get_or_404(id)
+    order_id = txn.related_order_id
+    
     db.session.delete(txn)
     db.session.commit()
+    
+    # If related to an order, update order payment status
+    if order_id:
+        order = Order.query.get(order_id)
+        if order:
+            # Calculate total paid
+            total_paid = db.session.query(func.sum(Transaction.amount))\
+                .filter_by(related_order_id=order.id, type='Income').scalar() or 0
+            
+            if total_paid >= order.total_amount:
+                order.payment_status = 'Paid'
+            elif total_paid > 0:
+                order.payment_status = 'Partial'
+            else:
+                order.payment_status = 'Unpaid'
+            
+            db.session.commit()
+            
     flash('Transaction deleted successfully!', 'warning')
     return redirect(url_for('main.finance'))
 
@@ -914,6 +935,18 @@ def audit_log():
     
     return render_template('settings/audit_log.html', logs=logs, 
                           user_filter=user_filter, action_filter=action_filter)
+
+@main_bp.route('/update-schema-2024')
+def update_schema():
+    """
+    Update database schema to create missing tables (like AuditLog)
+    without deleting existing data.
+    """
+    try:
+        db.create_all()
+        return "Schema updated successfully! Missing tables created."
+    except Exception as e:
+        return f"Error updating schema: {str(e)}"
 
 
 # ==================== DATABASE INITIALIZATION (ONE-TIME USE) ====================

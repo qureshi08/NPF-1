@@ -75,7 +75,8 @@ class Order(db.Model):
     total_amount = db.Column(db.Float, default=0.0)
     payment_status = db.Column(db.String(20), default='Unpaid') # Unpaid, Paid, Partial
     payment_method = db.Column(db.String(50))
-    items = db.relationship('OrderItem', backref='order', lazy='dynamic')
+    items = db.relationship('OrderItem', backref='order', lazy='dynamic', cascade='all, delete-orphan')
+    transactions = db.relationship('Transaction', backref='related_order', lazy='dynamic', cascade='all, delete-orphan')
 
 class OrderItem(db.Model):
     __tablename__ = 'order_items'
