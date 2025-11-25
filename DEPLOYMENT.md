@@ -10,35 +10,6 @@
    git add .
    git commit -m "Initial commit - Ready for deployment"
    ```
-
-### Step 2: Push to GitHub
-1. Create a new repository on GitHub: https://github.com/new
-2. Name it: `new-pindi-furniture`
-3. Push your code:
-   ```bash
-   git remote add origin https://github.com/YOUR_USERNAME/new-pindi-furniture.git
-   git branch -M main
-   git push -u origin main
-   ```
-
-### Step 3: Deploy on Render
-1. Go to https://render.com and sign up (free)
-2. Click "New +" → "Web Service"
-3. Connect your GitHub repository
-4. Configure:
-   - **Name**: new-pindi-furniture
-   - **Environment**: Python 3
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn run:app`
-   - **Plan**: Free
-
-5. Add Environment Variables (click "Advanced"):
-   - `SECRET_KEY`: `your-secret-key-here-change-this`
-   - `PYTHON_VERSION`: `3.11.0`
-
-6. Click "Create Web Service"
-
-### Step 4: Initialize Database
 After deployment, you need to initialize the database:
 1. Go to your Render dashboard
 2. Click on your service

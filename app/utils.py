@@ -192,3 +192,28 @@ def calculate_profit_margin(cost_price, selling_price):
 def format_currency(amount):
     """Format amount as PKR currency"""
     return f"PKR {amount:,.0f}"
+
+def log_action(action, entity_type=None, entity_id=None, details=None):
+    """Log user action to audit log"""
+    from app.models import AuditLog
+    from app import db
+    from flask import request
+    from flask_login import current_user
+    
+    try:
+        log = AuditLog(
+            user_id=current_user.id if current_user.is_authenticated else None,
+            username=current_user.username if current_user.is_authenticated else 'Anonymous',
+            action=action,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            details=details,
+            ip_address=request.remote_addr if request else None
+        )
+        db.session.add(log)
+        db.session.commit()
+    except Exception as e:
+        # Don't fail the main operation if logging fails
+        print(f"Audit log error: {e}")
+        db.session.rollback()
+

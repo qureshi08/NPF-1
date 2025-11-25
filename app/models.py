@@ -108,3 +108,18 @@ class Transaction(db.Model):
     date = db.Column(db.DateTime, default=datetime.utcnow)
     description = db.Column(db.String(200))
     related_order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=True)
+
+class AuditLog(db.Model):
+    __tablename__ = 'audit_logs'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    username = db.Column(db.String(64))  # Store username in case user is deleted
+    action = db.Column(db.String(100), nullable=False)  # e.g., "Created Product", "Deleted Order"
+    entity_type = db.Column(db.String(50))  # e.g., "Product", "Order", "Customer"
+    entity_id = db.Column(db.Integer)  # ID of the affected entity
+    details = db.Column(db.Text)  # JSON or text details of the action
+    ip_address = db.Column(db.String(45))  # IPv4 or IPv6
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    user = db.relationship('User', backref='audit_logs')
+

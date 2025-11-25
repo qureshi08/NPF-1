@@ -16,15 +16,29 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    from app.utils import log_action
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
+            # Log failed login attempt
+            log_action(
+                action=f'Failed login attempt for username: {form.username.data}',
+                entity_type='User',
+                details='Invalid credentials'
+            )
             flash('Invalid username or password', 'danger')
             return redirect(url_for('main.login'))
         login_user(user, remember=form.remember_me.data)
+        # Log successful login
+        log_action(
+            action=f'User logged in: {user.username}',
+            entity_type='User',
+            entity_id=user.id,
+            details=f'Successful login'
+        )
         flash(f'Welcome back, {user.username}!', 'success')
         next_page = request.args.get('next')
         return redirect(next_page) if next_page else redirect(url_for('main.index'))
@@ -32,6 +46,13 @@ def login():
 
 @main_bp.route('/logout')
 def logout():
+    from app.utils import log_action
+    if current_user.is_authenticated:
+        log_action(
+            action=f'User logged out: {current_user.username}',
+            entity_type='User',
+            entity_id=current_user.id
+        )
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('main.login'))
@@ -818,6 +839,82 @@ def delete_category(id):
     db.session.commit()
     flash(f'Category "{name}" deleted successfully!', 'warning')
     return redirect(url_for('main.settings'))
+
+@main_bp.route('/settings/change-password/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def change_password(user_id):
+    from app.utils import log_action
+    user = User.query.get_or_404(user_id)
+    
+    # Only allow users to change their own password, or admin to change any password
+    if current_user.id != user_id and current_user.role != 'Admin':
+        abort(403)
+    
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        # Verify current password (unless admin changing someone else's password)
+        if current_user.id == user_id:
+            if not user.check_password(current_password):
+                flash('Current password is incorrect!', 'danger')
+                return redirect(url_for('main.change_password', user_id=user_id))
+        
+        # Validate new password
+        if len(new_password) < 8:
+            flash('New password must be at least 8 characters long!', 'danger')
+            return redirect(url_for('main.change_password', user_id=user_id))
+        
+        if new_password != confirm_password:
+            flash('New passwords do not match!', 'danger')
+            return redirect(url_for('main.change_password', user_id=user_id))
+        
+        # Update password
+        user.set_password(new_password)
+        db.session.commit()
+        
+        # Log the action
+        log_action(
+            action=f'Changed password for user: {user.username}',
+            entity_type='User',
+            entity_id=user.id,
+            details=f'Password changed by {current_user.username}'
+        )
+        
+        flash(f'Password for {user.username} updated successfully!', 'success')
+        
+        if current_user.role == 'Admin':
+            return redirect(url_for('main.settings'))
+        else:
+            return redirect(url_for('main.index'))
+    
+    return render_template('settings/change_password.html', user=user)
+
+@main_bp.route('/settings/audit-log')
+@login_required
+@role_required('Admin')
+def audit_log():
+    from app.models import AuditLog
+    page = request.args.get('page', 1, type=int)
+    user_filter = request.args.get('user', '')
+    action_filter = request.args.get('action', '')
+    
+    query = AuditLog.query
+    
+    if user_filter:
+        query = query.filter(AuditLog.username.contains(user_filter))
+    
+    if action_filter:
+        query = query.filter(AuditLog.action.contains(action_filter))
+    
+    logs = query.order_by(AuditLog.timestamp.desc()).paginate(
+        page=page, per_page=50, error_out=False
+    )
+    
+    return render_template('settings/audit_log.html', logs=logs, 
+                          user_filter=user_filter, action_filter=action_filter)
+
 
 # ==================== DATABASE INITIALIZATION (ONE-TIME USE) ====================
 

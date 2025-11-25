@@ -53,12 +53,18 @@
                 <h5 class="mb-0">System Users</h5>
             </div>
             <div class="card-body">
+                <div class="mb-3">
+                    <a href="{{ url_for('main.audit_log') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-history"></i> View Audit Log
+                    </a>
+                </div>
                 <table class="table table-sm">
                     <thead>
                         <tr>
                             <th>Username</th>
                             <th>Email</th>
                             <th>Role</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,6 +73,12 @@
                             <td>{{ user.username }}</td>
                             <td>{{ user.email }}</td>
                             <td><span class="badge bg-primary">{{ user.role }}</span></td>
+                            <td>
+                                <a href="{{ url_for('main.change_password', user_id=user.id) }}"
+                                    class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-key"></i> Change Password
+                                </a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
