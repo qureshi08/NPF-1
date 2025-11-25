@@ -77,6 +77,7 @@ class Order(db.Model):
     payment_method = db.Column(db.String(50))
     items = db.relationship('OrderItem', backref='order', lazy='dynamic', cascade='all, delete-orphan')
     transactions = db.relationship('Transaction', backref='related_order', lazy='dynamic', cascade='all, delete-orphan')
+    production_jobs = db.relationship('ProductionJob', backref='order_ref', lazy='dynamic', cascade='all, delete-orphan')
 
 class OrderItem(db.Model):
     __tablename__ = 'order_items'

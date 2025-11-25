@@ -6,6 +6,7 @@ from app.forms import LoginForm, ProductForm, OrderForm, CustomerForm, SupplierF
 from app.utils import role_required, generate_pdf_invoice, export_to_excel, export_to_csv, get_low_stock_items
 from datetime import datetime, timedelta
 from sqlalchemy import func, desc
+from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 import os
 import io
@@ -221,9 +222,13 @@ def edit_product(id):
 def delete_product(id):
     product = Product.query.get_or_404(id)
     name = product.name
-    db.session.delete(product)
-    db.session.commit()
-    flash(f'Product "{name}" deleted successfully!', 'warning')
+    try:
+        db.session.delete(product)
+        db.session.commit()
+        flash(f'Product "{name}" deleted successfully!', 'warning')
+    except IntegrityError:
+        db.session.rollback()
+        flash(f'Cannot delete product "{name}" because it is part of existing orders. Please delete the orders first.', 'danger')
     return redirect(url_for('main.inventory'))
 
 # ==================== ORDERS ====================
