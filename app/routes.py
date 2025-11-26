@@ -1,12 +1,3 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify, send_file, make_response, current_app, abort
-from flask_login import login_user, logout_user, current_user, login_required
-from app import db
-from app.models import User, Product, Order, Customer, Supplier, Transaction, ProductionJob, OrderItem, Category
-from app.forms import LoginForm, ProductForm, OrderForm, CustomerForm, SupplierForm, TransactionForm, ProductionJobForm
-from app.utils import role_required, generate_pdf_invoice, export_to_excel, export_to_csv, get_low_stock_items, send_notification
-from datetime import datetime, timedelta
-from sqlalchemy import func, desc
-from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 import os
 import io
@@ -798,6 +789,7 @@ def delete_transaction(id):
 @main_bp.route('/reports')
 @login_required
 def reports():
+    # --- Existing Reports Logic ---
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
     sales_data = db.session.query(
         func.date(Order.order_date).label('date'),
@@ -807,17 +799,56 @@ def reports():
     dates = [str(d.date) for d in sales_data]
     amounts = [float(d.total) for d in sales_data]
     
-    top_products = db.session.query(
+    # --- Advanced Analytics Logic (Merged) ---
+    
+    # Profit Analysis
+    products_with_profit = db.session.query(
         Product.name,
-        func.sum(OrderItem.quantity).label('quantity'),
-        func.sum(OrderItem.subtotal).label('revenue')
-    ).join(OrderItem).join(Order).filter(Order.payment_status == 'Paid').group_by(Product.id).order_by(desc('revenue')).limit(10).all()
+        Product.selling_price,
+        Product.cost_price,
+        (Product.selling_price - Product.cost_price).label('profit_per_unit'),
+        func.sum(OrderItem.quantity).label('units_sold'),
+        func.sum(OrderItem.subtotal).label('revenue'),
+        func.sum(OrderItem.quantity * Product.cost_price).label('total_cost')
+    ).join(OrderItem).join(Order).filter(
+        Order.payment_status == 'Paid'
+    ).group_by(Product.id, Product.name, Product.selling_price, Product.cost_price).all()
+    
+    # Calculate total profit
+    total_revenue = sum([p.revenue for p in products_with_profit])
+    total_cost = sum([p.total_cost for p in products_with_profit])
+    total_profit = total_revenue - total_cost
+    profit_margin = (total_profit/total_revenue*100 if total_revenue > 0 else 0)
+    
+    # Inventory valuation
+    inventory_value = db.session.query(
+        func.sum(Product.cost_price * Product.stock_quantity)
+    ).scalar() or 0
+    
+    # Top customers by revenue
+    top_customers = db.session.query(
+        Customer.name,
+        func.count(Order.id).label('order_count'),
+        func.sum(Order.total_amount).label('total_spent')
+    ).join(Order).filter(
+        Order.payment_status == 'Paid'
+    ).group_by(Customer.id, Customer.name).order_by(desc('total_spent')).limit(10).all()
+    
+    # Top products for chart
+    top_products = sorted(products_with_profit, key=lambda x: x.revenue or 0, reverse=True)[:5]
     
     low_stock = get_low_stock_items()
     
     return render_template('reports/view.html', 
                           dates=dates, 
                           amounts=amounts,
+                          products=products_with_profit,
+                          total_revenue=total_revenue,
+                          total_cost=total_cost,
+                          total_profit=total_profit,
+                          profit_margin=profit_margin,
+                          inventory_value=inventory_value,
+                          top_customers=top_customers,
                           top_products=top_products,
                           low_stock=low_stock)
 
@@ -1294,74 +1325,6 @@ def view_payments(order_id):
     remaining = order.total_amount - total_paid
     
     return render_template('orders/payments.html', 
-                          order=order, 
-                          payments=payments,
-                          total_paid=total_paid,
-                          remaining=remaining)
-
-# ==================== ADVANCED ANALYTICS ====================
-
-@main_bp.route('/analytics')
-@login_required
-def analytics():
-    # Profit Analysis
-    products_with_profit = db.session.query(
-        Product.name,
-        Product.selling_price,
-        Product.cost_price,
-        (Product.selling_price - Product.cost_price).label('profit_per_unit'),
-        func.sum(OrderItem.quantity).label('units_sold'),
-        func.sum(OrderItem.subtotal).label('revenue'),
-        func.sum(OrderItem.quantity * Product.cost_price).label('total_cost')
-    ).join(OrderItem).join(Order).filter(
-        Order.payment_status == 'Paid'
-    ).group_by(Product.id, Product.name, Product.selling_price, Product.cost_price).all()
-    
-    # Calculate total profit
-    total_revenue = sum([p.revenue for p in products_with_profit])
-    total_cost = sum([p.total_cost for p in products_with_profit])
-    total_profit = total_revenue - total_cost
-    
-    # Inventory valuation
-    inventory_value = db.session.query(
-        func.sum(Product.cost_price * Product.stock_quantity)
-    ).scalar() or 0
-    
-    # Top customers by revenue
-    top_customers = db.session.query(
-        Customer.name,
-        func.count(Order.id).label('order_count'),
-        func.sum(Order.total_amount).label('total_spent')
-    ).join(Order).filter(
-        Order.payment_status == 'Paid'
-    ).group_by(Customer.id, Customer.name).order_by(desc('total_spent')).limit(10).all()
-    
-    # Monthly sales trend
-    six_months_ago = datetime.utcnow() - timedelta(days=180)
-    monthly_sales = db.session.query(
-        func.strftime('%Y-%m', Order.order_date).label('month'),
-        func.sum(Order.total_amount).label('revenue'),
-        func.count(Order.id).label('order_count')
-    ).filter(
-        Order.order_date >= six_months_ago,
-        Order.payment_status == 'Paid'
-    ).group_by('month').all()
-    
-    return render_template('analytics/dashboard.html',
-                          products=products_with_profit,
-                          total_revenue=total_revenue,
-                          total_cost=total_cost,
-                          total_profit=total_profit,
-                          profit_margin=(total_profit/total_revenue*100 if total_revenue > 0 else 0),
-                          inventory_value=inventory_value,
-                          top_customers=top_customers,
-                          monthly_sales=monthly_sales)
-
-# ==================== GLOBAL SEARCH ====================
-
-@main_bp.route('/search')
-@login_required
-def global_search():
     query = request.args.get('q', '').strip()
     
     if not query or len(query) < 2:

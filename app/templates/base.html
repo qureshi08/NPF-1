@@ -174,129 +174,389 @@
         {% endif %}
         <hr class="bg-light">
         <small class="text-muted px-3">Logged in as: <strong>{{ current_user.username }}</strong></small>
-        <a href="{{ url_for('main.logout') }}" class="mt-2"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
-    </div>
-    {% endif %}
+        <!DOCTYPE html>
+        <html lang="en">
 
-    <div class="{{ 'content' if current_user.is_authenticated else 'container mt-5' }}">
-        {% if current_user.is_authenticated %}
-        <div class="d-flex justify-content-end align-items-center mb-4">
-            <!-- Notification Bell -->
-            <div class="dropdown">
-                <a href="#" class="text-dark position-relative me-3" id="notificationDropdown" data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                    <i class="fas fa-bell fa-lg"></i>
-                    {% if unread_notif_count > 0 %}
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        {{ unread_notif_count }}
-                        <span class="visually-hidden">unread messages</span>
-                    </span>
-                    {% endif %}
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" aria-labelledby="notificationDropdown"
-                    style="width: 320px; max-height: 400px; overflow-y: auto;">
-                    <li>
-                        <h6 class="dropdown-header d-flex justify-content-between align-items-center">
-                            Notifications
-                            {% if unread_notif_count > 0 %}
-                            <a href="{{ url_for('main.mark_all_notifications_read') }}"
-                                class="text-decoration-none small">Mark all read</a>
-                            {% endif %}
-                        </h6>
-                    </li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>{{ title }} - New Pindi Furniture</title>
 
-                    {% if recent_notifications %}
-                    {% for notif in recent_notifications %}
-                    <li>
-                        <a class="dropdown-item d-flex align-items-start p-3 {{ 'bg-light' if not notif.is_read else '' }}"
-                            href="{{ url_for('main.mark_notification_read', id=notif.id) }}">
-                            <div class="me-3 mt-1">
-                                {% if notif.type == 'success' %}
-                                <i class="fas fa-check-circle text-success"></i>
-                                {% elif notif.type == 'warning' %}
-                                <i class="fas fa-exclamation-triangle text-warning"></i>
-                                {% elif notif.type == 'danger' %}
-                                <i class="fas fa-times-circle text-danger"></i>
-                                {% else %}
-                                <i class="fas fa-info-circle text-primary"></i>
-                                {% endif %}
-                            </div>
-                            <div>
-                                <p class="mb-1 small text-wrap">{{ notif.message }}</p>
-                                <small class="text-muted" style="font-size: 0.75rem;">{{ notif.timestamp.strftime('%b
-                                    %d, %H:%M') }}</small>
-                            </div>
-                        </a>
-                    </li>
-                    {% endfor %}
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li><a class="dropdown-item text-center small text-primary"
-                            href="{{ url_for('main.notifications') }}">View All Notifications</a></li>
-                    {% else %}
-                    <li class="p-3 text-center text-muted small">No notifications</li>
-                    {% endif %}
-                </ul>
+            <!-- Google Fonts -->
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+                rel="stylesheet">
+
+            <!-- Bootstrap & Icons -->
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+            <!-- Custom Styles -->
+            <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+            <style>
+                /* Premium Base Styles */
+                body {
+                    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+                    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+                    background-attachment: fixed;
+                    color: #2c3e50;
+                    line-height: 1.6;
+                }
+
+                /* Premium Sidebar with Gradient */
+                .sidebar {
+                    height: 100vh;
+                    width: 260px;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    background: linear-gradient(180deg, #1a1f2e 0%, #2c3e50 100%);
+                    padding-top: 24px;
+                    color: white;
+                    z-index: 1000;
+                    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+                    overflow-y: auto;
+                }
+
+                .sidebar::-webkit-scrollbar {
+                    width: 6px;
+                }
+
+                .sidebar::-webkit-scrollbar-thumb {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 3px;
+                }
+
+                .sidebar a {
+                    padding: 14px 20px;
+                    text-decoration: none;
+                    font-size: 1rem;
+                    color: rgba(255, 255, 255, 0.8);
+                    display: flex;
+                    align-items: center;
+                    font-weight: 500;
+                    letter-spacing: 0.3px;
+                }
+
+                .sidebar a i {
+                    width: 24px;
+                    text-align: center;
+                }
+
+                .sidebar a:hover {
+                    color: #ffffff;
+                }
+
+                .sidebar .active {
+                    color: #ffffff;
+                }
+
+                /* Premium Content Area */
+                .content {
+                    margin-left: 260px;
+                    padding: 32px;
+                    min-height: 100vh;
+                }
+
+                /* Enhanced Logo Area */
+                .sidebar .text-center {
+                    padding: 0 20px 20px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    margin-bottom: 20px;
+                }
+
+                .sidebar .text-center .bg-white {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+                    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                }
+
+                .sidebar .text-center .bg-white:hover {
+                    transform: scale(1.1) rotate(5deg);
+                    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.5);
+                }
+
+                .sidebar h4 {
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                    background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                }
+
+                /* Page Headers */
+                h1,
+                h2,
+                h3,
+                h4,
+                h5,
+                h6 {
+                    font-weight: 700;
+                    color: #1a1f2e;
+                    letter-spacing: -0.5px;
+                }
+
+                .h2 {
+                    background: linear-gradient(135deg, #1a1f2e 0%, #2c3e50 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                }
+            </style>
+        </head>
+
+        <body>
+
+            {% if current_user.is_authenticated %}
+            <!-- Mobile Menu Toggle Button -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Mobile Overlay -->
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+            <div class="sidebar" id="sidebar">
+                <div class="text-center mb-4">
+                    <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width: 60px; height: 60px;">
+                        <i class="fas fa-couch fa-2x text-white"></i>
+                    </div>
+                    <h4 class="mb-0">NPF Admin</h4>
+                </div>
+                <a href="{{ url_for('main.index') }}"
+                    class="{{ 'active' if request.endpoint == 'main.index' else '' }}"><i
+                        class="fas fa-tachometer-alt me-2"></i> Dashboard</a>
+                <a href="{{ url_for('main.inventory') }}"
+                    class="{{ 'active' if 'inventory' in request.endpoint else '' }}"><i class="fas fa-boxes me-2"></i>
+                    Inventory</a>
+                <a href="{{ url_for('main.orders') }}" class="{{ 'active' if 'order' in request.endpoint else '' }}"><i
+                        class="fas fa-shopping-cart me-2"></i> Orders</a>
+                <a href="{{ url_for('main.production') }}"
+                    class="{{ 'active' if 'production' in request.endpoint or 'job' in request.endpoint else '' }}"><i
+                        class="fas fa-hammer me-2"></i> Production</a>
+                <a href="{{ url_for('main.customers') }}"
+                    class="{{ 'active' if 'customer' in request.endpoint else '' }}"><i class="fas fa-users me-2"></i>
+                    Customers</a>
+                <a href="{{ url_for('main.suppliers') }}"
+                    class="{{ 'active' if 'supplier' in request.endpoint else '' }}"><i class="fas fa-truck me-2"></i>
+                    Suppliers</a>
+                <a href="{{ url_for('main.finance') }}"
+                    class="{{ 'active' if 'finance' in request.endpoint or 'transaction' in request.endpoint else '' }}"><i
+                        class="fas fa-chart-line me-2"></i> Finance</a>
+                <a href="{{ url_for('main.reports') }}"
+                    class="{{ 'active' if 'report' in request.endpoint else '' }}"><i class="fas fa-file-alt me-2"></i>
+                    Reports</a>
+                {% if current_user.role == 'Admin' %}
+                <a href="{{ url_for('main.settings') }}"
+                    class="{{ 'active' if 'settings' in request.endpoint else '' }}"><i class="fas fa-cog me-2"></i>
+                    Settings</a>
+                {% endif %}
+                <hr class="bg-light">
+                <small class="text-muted px-3">Logged in as: <strong>{{ current_user.username }}</strong></small>
+                <a href="{{ url_for('main.logout') }}" class="mt-2"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
             </div>
-        </div>
-        {% endif %}
+            {% endif %}
 
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-info alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
+            <div class="{{ 'content' if current_user.is_authenticated else 'container mt-5' }}">
+                {% if current_user.is_authenticated %}
+                <div class="d-flex justify-content-end align-items-center mb-4">
+                    <!-- Global Search -->
+                    <div class="position-relative me-3" style="width: 300px;">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 rounded-start-pill"><i
+                                    class="fas fa-search text-muted"></i></span>
+                            <input type="text" id="globalSearchInput"
+                                class="form-control border-start-0 rounded-end-pill" placeholder="Search..."
+                                autocomplete="off">
+                        </div>
+                        <div id="searchResults" class="position-absolute w-100 bg-white shadow-lg rounded-3 mt-2 d-none"
+                            style="z-index: 1050; max-height: 400px; overflow-y: auto;">
+                            <!-- Results will be injected here -->
+                        </div>
+                    </div>
 
-        {% block content %}{% endblock %}
-    </div>
+                    <!-- Notification Bell -->
+                    <div class="dropdown">
+                        <a href="#" class="text-dark position-relative me-3" id="notificationDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell fa-lg"></i>
+                            {% if unread_notif_count > 0 %}
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ unread_notif_count }}
+                                <span class="visually-hidden">unread messages</span>
+                            </span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0"
+                            aria-labelledby="notificationDropdown"
+                            style="width: 320px; max-height: 400px; overflow-y: auto;">
+                            <li>
+                                <h6 class="dropdown-header d-flex justify-content-between align-items-center">
+                                    Notifications
+                                    {% if unread_notif_count > 0 %}
+                                    <a href="{{ url_for('main.mark_all_notifications_read') }}"
+                                        class="text-decoration-none small">Mark all read</a>
+                                    {% endif %}
+                                </h6>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                            {% if recent_notifications %}
+                            {% for notif in recent_notifications %}
+                            <li>
+                                <a class="dropdown-item d-flex align-items-start p-3 {{ 'bg-light' if not notif.is_read else '' }}"
+                                    href="{{ url_for('main.mark_notification_read', id=notif.id) }}">
+                                    <div class="me-3 mt-1">
+                                        {% if notif.type == 'success' %}
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        {% elif notif.type == 'warning' %}
+                                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                                        {% elif notif.type == 'danger' %}
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                        {% else %}
+                                        <i class="fas fa-info-circle text-primary"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <p class="mb-1 small text-wrap">{{ notif.message }}</p>
+                                        <small class="text-muted" style="font-size: 0.75rem;">{{
+                                            notif.timestamp.strftime('%b
+                                            %d, %H:%M') }}</small>
+                                    </div>
+                                </a>
+                            </li>
+                            {% endfor %}
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-center small text-primary"
+                                    href="{{ url_for('main.notifications') }}">View All Notifications</a></li>
+                            {% else %}
+                            <li class="p-3 text-center text-muted small">No notifications</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
 
-    <!-- Mobile Menu Toggle Script -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const menuToggle = document.getElementById('mobileMenuToggle');
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
 
-            if (menuToggle && sidebar && overlay) {
-                // Toggle menu on button click
-                menuToggle.addEventListener('click', function () {
-                    sidebar.classList.toggle('active');
-                    overlay.classList.toggle('active');
-                });
+                {% block content %}{% endblock %}
+            </div>
 
-                // Close menu when clicking overlay
-                overlay.addEventListener('click', function () {
-                    sidebar.classList.remove('active');
-                    overlay.classList.remove('active');
-                });
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-                // Close menu when clicking a link (mobile only)
-                const sidebarLinks = sidebar.querySelectorAll('a');
-                sidebarLinks.forEach(link => {
-                    link.addEventListener('click', function () {
-                        if (window.innerWidth <= 768) {
+            <!-- Mobile Menu Toggle Script -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const menuToggle = document.getElementById('mobileMenuToggle');
+                    const sidebar = document.getElementById('sidebar');
+                    const overlay = document.getElementById('sidebarOverlay');
+
+                    if (menuToggle && sidebar && overlay) {
+                        // Toggle menu on button click
+                        menuToggle.addEventListener('click', function () {
+                            sidebar.classList.toggle('active');
+                            overlay.classList.toggle('active');
+                        });
+
+                        // Close menu when clicking overlay
+                        overlay.addEventListener('click', function () {
                             sidebar.classList.remove('active');
                             overlay.classList.remove('active');
-                        }
-                    });
+                        });
+
+                        // Close menu when clicking a link (mobile only)
+                        const sidebarLinks = sidebar.querySelectorAll('a');
+                        sidebarLinks.forEach(link => {
+                            link.addEventListener('click', function () {
+                                if (window.innerWidth <= 768) {
+                                    sidebar.classList.remove('active');
+                                    overlay.classList.remove('active');
+                                }
+                            });
+                        });
+                    }
+
+                    // Global Search Logic
+                    const searchInput = document.getElementById('globalSearchInput');
+                    const searchResults = document.getElementById('searchResults');
+                    let searchTimeout;
+
+                    if (searchInput) {
+                        searchInput.addEventListener('input', function () {
+                            clearTimeout(searchTimeout);
+                            const query = this.value.trim();
+
+                            if (query.length < 2) {
+                                searchResults.classList.add('d-none');
+                                searchResults.innerHTML = '';
+                                return;
+                            }
+
+                            searchTimeout = setTimeout(() => {
+                                fetch(`/search?q=${encodeURIComponent(query)}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        searchResults.innerHTML = '';
+                                        if (data.results.length > 0) {
+                                            searchResults.classList.remove('d-none');
+                                            const list = document.createElement('div');
+                                            list.className = 'list-group list-group-flush';
+
+                                            data.results.forEach(item => {
+                                                const a = document.createElement('a');
+                                                a.href = item.url;
+                                                a.className = 'list-group-item list-group-item-action d-flex align-items-center p-3';
+                                                a.innerHTML = `
+                                            <div class="me-3 text-primary"><i class="fas ${item.icon} fa-lg"></i></div>
+                                            <div>
+                                                <div class="fw-bold">${item.title}</div>
+                                                <small class="text-muted">${item.subtitle}</small>
+                                            </div>
+                                        `;
+                                                list.appendChild(a);
+                                            });
+                                            searchResults.appendChild(list);
+                                        } else {
+                                            searchResults.classList.remove('d-none');
+                                            searchResults.innerHTML = '<div class="p-3 text-center text-muted">No results found</div>';
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.error('Search error:', err);
+                                    });
+                            }, 300);
+                        });
+
+                        // Close search results when clicking outside
+                        document.addEventListener('click', function (e) {
+                            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                                searchResults.classList.add('d-none');
+                            }
+                        });
+                    }
                 });
-            }
-        });
-    </script>
+            </script>
 
-    {% block scripts %}{% endblock %}
-</body>
+            {% block scripts %}{% endblock %}
+        </body>
 
-</html>
+        </html>
