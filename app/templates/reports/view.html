@@ -2,20 +2,308 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-chart-pie me-2 text-primary"></i>Business Reports</h2>
-    <div class="btn-group">
-        <a href="{{ url_for('main.export_products') }}" class="btn btn-outline-success"><i
-                class="fas fa-file-excel me-2"></i>Export Products</a>
-        <a href="{{ url_for('main.export_orders') }}" class="btn btn-outline-primary"><i // Sales Chart const
-                salesCtx=document.getElementById('salesChart').getContext('2d'); new Chart(salesCtx, { type: 'line' ,
-                data: { labels: {{ dates | tojson }}, datasets: [{ label: 'Sales (PKR)' , data: {{ amounts | tojson }},
-                borderColor: '#0d6efd' , backgroundColor: 'rgba(13, 110, 253, 0.1)' , tension: 0.4, fill: true }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, grid: { borderDash: [2, 4] } }, x: { grid: { display: false } } } }
-                }); // Top Products Chart const productsCtx=document.getElementById('productsChart').getContext('2d');
-                new Chart(productsCtx, { type: 'doughnut' , data: { labels: [{% for p in top_products[: 5] %}"{{ p.name
-                }}", {% endfor %}], datasets: [{ data: [{% for p in top_products[: 5] %}{{ p.revenue }}, {% endfor %}],
-                backgroundColor: [ '#4e73df' , '#1cc88a' , '#36b9cc' , '#f6c23e' , '#e74a3b' ], hoverOffset: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' ,
-                labels: { boxWidth: 12 } } } } }); </script>
-                {% endblock %}
+        <h2><i class="fas fa-chart-pie me-2 text-primary"></i>Business Reports & Analytics</h2>
+        <div class="btn-group">
+                <a href="{{ url_for('main.export_products') }}" class="btn btn-outline-success"><i
+                                class="fas fa-file-excel me-2"></i>Export Products</a>
+                <a href="{{ url_for('main.export_orders') }}" class="btn btn-outline-primary"><i
+                                class="fas fa-file-excel me-2"></i>Export Orders</a>
+                <a href="{{ url_for('main.export_transactions') }}" class="btn btn-outline-info"><i
+                                class="fas fa-file-excel me-2"></i>Export Transactions</a>
+        </div>
+</div>
+
+<!-- Financial Summary Cards -->
+<div class="row mb-4">
+        <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 bg-primary text-white">
+                        <div class="card-body">
+                                <h6 class="text-uppercase mb-2" style="opacity: 0.8;">Total Revenue</h6>
+                                <h3 class="mb-0">PKR {{ "{:,.2f}".format(total_revenue) }}</h3>
+                        </div>
+                </div>
+        </div>
+        <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 bg-danger text-white">
+                        <div class="card-body">
+                                <h6 class="text-uppercase mb-2" style="opacity: 0.8;">Total Cost</h6>
+                                <h3 class="mb-0">PKR {{ "{:,.2f}".format(total_cost) }}</h3>
+                        </div>
+                </div>
+        </div>
+        <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 bg-success text-white">
+                        <div class="card-body">
+                                <h6 class="text-uppercase mb-2" style="opacity: 0.8;">Net Profit</h6>
+                                <h3 class="mb-0">PKR {{ "{:,.2f}".format(total_profit) }}</h3>
+                                <small style="opacity: 0.8;">Margin: {{ "{:.1f}".format(profit_margin) }}%</small>
+                        </div>
+                </div>
+        </div>
+        <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 bg-info text-white">
+                        <div class="card-body">
+                                <h6 class="text-uppercase mb-2" style="opacity: 0.8;">Inventory Value</h6>
+                                <h3 class="mb-0">PKR {{ "{:,.2f}".format(inventory_value) }}</h3>
+                        </div>
+                </div>
+        </div>
+</div>
+
+<div class="row mb-4">
+        <!-- Sales Trend Chart -->
+        <div class="col-md-8 mb-4 mb-md-0">
+                <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3">
+                                <h5 class="mb-0 text-primary fw-bold">Sales Trend (Last 7 Days)</h5>
+                        </div>
+                        <div class="card-body">
+                                <canvas id="salesChart" height="300"></canvas>
+                        </div>
+                </div>
+        </div>
+
+        <!-- Top Products Chart -->
+        <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3">
+                                <h5 class="mb-0 text-primary fw-bold">Top Products by Revenue</h5>
+                        </div>
+                        <div class="card-body">
+                                <canvas id="productsChart" height="300"></canvas>
+                        </div>
+                </div>
+        </div>
+</div>
+
+<div class="row mb-4">
+        <!-- Product Profitability Analysis -->
+        <div class="col-md-8 mb-4 mb-md-0">
+                <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3">
+                                <h5 class="mb-0 text-primary fw-bold">Product Profitability Analysis</h5>
+                        </div>
+                        <div class="card-body p-0">
+                                <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-light">
+                                                        <tr>
+                                                                <th class="ps-4">Product Name</th>
+                                                                <th>Sold</th>
+                                                                <th>Revenue</th>
+                                                                <th>Profit</th>
+                                                                <th>Margin</th>
+                                                        </tr>
+                                                </thead>
+                                                <tbody>
+                                                        {% for p in products[:10] %}
+                                                        <tr>
+                                                                <td class="ps-4 fw-medium">{{ p.name }}</td>
+                                                                <td>{{ p.units_sold }}</td>
+                                                                <td>PKR {{ "{:,.0f}".format(p.revenue) }}</td>
+                                                                <td class="text-success fw-bold">PKR {{
+                                                                        "{:,.0f}".format(p.profit) }}</td>
+                                                                <td>
+                                                                        <span
+                                                                                class="badge bg-{{ 'success' if p.margin > 20 else 'warning' if p.margin > 10 else 'danger' }}">
+                                                                                {{ "{:.1f}".format(p.margin) }}%
+                                                                        </span>
+                                                                </td>
+                                                        </tr>
+                                                        {% else %}
+                                                        <tr>
+                                                                <td colspan="5" class="text-center py-4 text-muted">No
+                                                                        sales data available</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                </tbody>
+                                        </table>
+                                </div>
+                        </div>
+                </div>
+        </div>
+
+        <!-- Top Customers -->
+        <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3">
+                                <h5 class="mb-0 text-primary fw-bold">Top Customers</h5>
+                        </div>
+                        <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                        {% for c in top_customers[:5] %}
+                                        <div class="list-group-item px-4 py-3">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <h6 class="mb-0 fw-bold">{{ c.name }}</h6>
+                                                        <span class="badge bg-primary rounded-pill">{{ c.orders_count }}
+                                                                Orders</span>
+                                                </div>
+                                                <small class="text-muted d-block mb-1">{{ c.email or c.phone }}</small>
+                                                <div class="fw-bold text-success">PKR {{ "{:,.0f}".format(c.total_spent)
+                                                        }}</div>
+                                        </div>
+                                        {% else %}
+                                        <div class="p-4 text-center text-muted">No customer data available</div>
+                                        {% endfor %}
+                                </div>
+                        </div>
+                </div>
+        </div>
+</div>
+
+<!-- Low Stock Alerts -->
+<div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-danger fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Low Stock Alerts
+                </h5>
+                <a href="{{ url_for('main.inventory') }}" class="btn btn-sm btn-outline-secondary">Manage Inventory</a>
+        </div>
+        <div class="card-body p-0">
+                <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                        <tr>
+                                                <th class="ps-4">Product</th>
+                                                <th>Category</th>
+                                                <th>Current Stock</th>
+                                                <th>Reorder Level</th>
+                                                <th>Status</th>
+                                                <th class="text-end pe-4">Action</th>
+                                        </tr>
+                                </thead>
+                                <tbody>
+                                        {% for item in low_stock %}
+                                        <tr>
+                                                <td class="ps-4 fw-medium">{{ item.name }}</td>
+                                                <td><span class="badge bg-light text-dark border">{{ item.category.name
+                                                                if item.category else 'Uncategorized' }}</span></td>
+                                                <td class="fw-bold text-danger">{{ item.stock_quantity }}</td>
+                                                <td>{{ item.reorder_level }}</td>
+                                                <td><span class="badge bg-danger">Low Stock</span></td>
+                                                <td class="text-end pe-4">
+                                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                                                data-bs-target="#restockModal{{ item.id }}">
+                                                                <i class="fas fa-plus me-1"></i> Restock
+                                                        </button>
+                                                </td>
+                                        </tr>
+
+                                        <!-- Restock Modal -->
+                                        <div class="modal fade" id="restockModal{{ item.id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                        <h5 class="modal-title">Restock {{ item.name }}
+                                                                        </h5>
+                                                                        <button type="button" class="btn-close"
+                                                                                data-bs-dismiss="modal"></button>
+                                                                </div>
+                                                                <form action="{{ url_for('main.update_stock', id=item.id) }}"
+                                                                        method="POST">
+                                                                        <div class="modal-body">
+                                                                                <div class="mb-3">
+                                                                                        <label class="form-label">Quantity
+                                                                                                to Add</label>
+                                                                                        <input type="number"
+                                                                                                name="quantity"
+                                                                                                class="form-control"
+                                                                                                min="1" required>
+                                                                                </div>
+                                                                        </div>
+                                                                        <div class="modal-footer">
+                                                                                <button type="button"
+                                                                                        class="btn btn-secondary"
+                                                                                        data-bs-dismiss="modal">Cancel</button>
+                                                                                <button type="submit"
+                                                                                        class="btn btn-primary">Update
+                                                                                        Stock</button>
+                                                                        </div>
+                                                                </form>
+                                                        </div>
+                                                </div>
+                                        </div>
+                                        {% else %}
+                                        <tr>
+                                                <td colspan="6" class="text-center py-4 text-muted">
+                                                        <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
+                                                        <p class="mb-0">All stock levels are healthy!</p>
+                                                </td>
+                                        </tr>
+                                        {% endfor %}
+                                </tbody>
+                        </table>
+                </div>
+        </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Sales Chart
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: {{ dates | tojson }},
+            datasets: [{
+                label: 'Sales (PKR)',
+                data: {{ amounts | tojson }},
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        borderDash: [2, 4]
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Top Products Chart
+    const productsCtx = document.getElementById('productsChart').getContext('2d');
+    new Chart(productsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for p in top_products[:5] %}"{{ p.name }}",{% endfor %}],
+            datasets: [{
+                data: [{% for p in top_products[:5] %}{{ p.revenue }},{% endfor %}],
+                backgroundColor: [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
