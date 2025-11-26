@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, FloatField, IntegerField, TextAreaField, SelectField, DateField, SubmitField
-from wtforms.validators import DataRequired, Email, Length, Optional
+from wtforms.validators import DataRequired, Email, Length, Optional, EqualTo
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -52,3 +52,10 @@ class ProductionJobForm(FlaskForm):
     due_date = DateField('Due Date', validators=[Optional()])
     status = SelectField('Status', choices=[('Queued', 'Queued'), ('Cutting', 'Cutting'), ('Assembling', 'Assembling'), ('Polishing', 'Polishing'), ('Finished', 'Finished')], default='Queued')
     assigned_worker = StringField('Assigned Worker')
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Register')
