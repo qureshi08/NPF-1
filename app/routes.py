@@ -865,7 +865,7 @@ def reports():
     ).group_by(Customer.id, Customer.name).order_by(desc('total_spent')).limit(10).all()
     
     # Top products for chart
-    top_products = sorted(products_with_profit, key=lambda x: x.revenue or 0, reverse=True)[:5]
+    top_products = sorted(products_with_profit, key=lambda x: x['revenue'] or 0, reverse=True)[:5]
     
     low_stock = get_low_stock_items()
     
