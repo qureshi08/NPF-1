@@ -812,7 +812,7 @@ def reports():
     # --- Advanced Analytics Logic (Merged) ---
     
     # Profit Analysis
-    products_with_profit = db.session.query(
+    products_query = db.session.query(
         Product.name,
         Product.selling_price,
         Product.cost_price,
@@ -824,9 +824,29 @@ def reports():
         Order.payment_status == 'Paid'
     ).group_by(Product.id, Product.name, Product.selling_price, Product.cost_price).all()
     
+    # Process products to add calculated fields
+    products_with_profit = []
+    for p in products_query:
+        revenue = p.revenue or 0
+        total_cost = p.total_cost or 0
+        profit = revenue - total_cost
+        margin = (profit / revenue * 100) if revenue > 0 else 0
+        
+        products_with_profit.append({
+            'name': p.name,
+            'selling_price': p.selling_price,
+            'cost_price': p.cost_price,
+            'profit_per_unit': p.profit_per_unit,
+            'units_sold': p.units_sold,
+            'revenue': revenue,
+            'total_cost': total_cost,
+            'profit': profit,
+            'margin': margin
+        })
+    
     # Calculate total profit
-    total_revenue = sum([p.revenue for p in products_with_profit])
-    total_cost = sum([p.total_cost for p in products_with_profit])
+    total_revenue = sum([p['revenue'] for p in products_with_profit])
+    total_cost = sum([p['total_cost'] for p in products_with_profit])
     total_profit = total_revenue - total_cost
     profit_margin = (total_profit/total_revenue*100 if total_revenue > 0 else 0)
     
