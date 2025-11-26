@@ -181,48 +181,11 @@
                                                 <td>{{ item.reorder_level }}</td>
                                                 <td><span class="badge bg-danger">Low Stock</span></td>
                                                 <td class="text-end pe-4">
-                                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                                                data-bs-target="#restockModal{{ item.id }}">
-                                                                <i class="fas fa-plus me-1"></i> Restock
-                                                        </button>
+                                                        \u003ca href="{{ url_for('main.edit_product', id=item.id) }}" class="btn btn-sm btn-primary"\u003e\u003ci class="fas fa-edit me-1"\u003e\u003c/i\u003e Update Stock\u003c/a\u003e
                                                 </td>
                                         </tr>
 
-                                        <!-- Restock Modal -->
-                                        <div class="modal fade" id="restockModal{{ item.id }}" tabindex="-1">
-                                                <div class="modal-dialog">
-                                                        <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                        <h5 class="modal-title">Restock {{ item.name }}
-                                                                        </h5>
-                                                                        <button type="button" class="btn-close"
-                                                                                data-bs-dismiss="modal"></button>
-                                                                </div>
-                                                                <form action="{{ url_for('main.update_stock', id=item.id) }}"
-                                                                        method="POST">
-                                                                        <div class="modal-body">
-                                                                                <div class="mb-3">
-                                                                                        <label class="form-label">Quantity
-                                                                                                to Add</label>
-                                                                                        <input type="number"
-                                                                                                name="quantity"
-                                                                                                class="form-control"
-                                                                                                min="1" required>
-                                                                                </div>
-                                                                        </div>
-                                                                        <div class="modal-footer">
-                                                                                <button type="button"
-                                                                                        class="btn btn-secondary"
-                                                                                        data-bs-dismiss="modal">Cancel</button>
-                                                                                <button type="submit"
-                                                                                        class="btn btn-primary">Update
-                                                                                        Stock</button>
-                                                                        </div>
-                                                                </form>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                        {% else %}
+                                        {%else %}
                                         <tr>
                                                 <td colspan="6" class="text-center py-4 text-muted">
                                                         <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
@@ -307,3 +270,4 @@
     });
 </script>
 {% endblock %}
+
