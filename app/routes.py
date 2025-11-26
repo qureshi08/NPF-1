@@ -10,7 +10,7 @@ import csv
 from app import db
 from app.models import User, Product, Supplier, Customer, Order, OrderItem, Category, ProductionJob, Transaction, Payment, OrderHistory, Notification
 from app.forms import LoginForm, ProductForm, SupplierForm, CustomerForm, OrderForm, ProductionJobForm, TransactionForm, RegistrationForm
-from app.utils import role_required, log_action, send_notification
+from app.utils import role_required, log_action, send_notification, get_low_stock_items
 
 main_bp = Blueprint('main', __name__)
 
