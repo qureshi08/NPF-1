@@ -1208,3 +1208,256 @@ def init_database():
         </body>
         </html>
         """
+
+# ==================== PAYMENT MANAGEMENT ====================
+
+@main_bp.route('/orders/<int:order_id>/add-payment', methods=['POST'])
+@login_required
+@role_required('Admin', 'Staff')
+def add_payment(order_id):
+    from app.models import Payment, OrderHistory
+    order = Order.query.get_or_404(order_id)
+    
+    amount = float(request.form.get('amount', 0))
+    payment_method = request.form.get('payment_method', 'Cash')
+    notes = request.form.get('notes', '')
+    
+    if amount <= 0:
+        flash('Payment amount must be greater than 0!', 'danger')
+        return redirect(url_for('main.view_order', id=order_id))
+    
+    # Create payment record
+    payment = Payment(
+        order_id=order.id,
+        amount=amount,
+        payment_method=payment_method,
+        notes=notes,
+        recorded_by=current_user.id
+    )
+    db.session.add(payment)
+    
+    # Calculate total paid
+    total_paid = db.session.query(func.sum(Payment.amount)).filter_by(order_id=order.id).scalar() or 0
+    total_paid += amount
+    
+    # Update order payment status
+    if total_paid >= order.total_amount:
+        order.payment_status = 'Paid'
+        status_msg = 'Paid in Full'
+    elif total_paid > 0:
+        order.payment_status = 'Partial'
+        status_msg = f'Partial (PKR {total_paid:,.0f} / {order.total_amount:,.0f})'
+    else:
+        order.payment_status = 'Unpaid'
+        status_msg = 'Unpaid'
+    
+    # Add to order history
+    history = OrderHistory(
+        order_id=order.id,
+        action=f'Payment received: PKR {amount:,.0f}',
+        user_id=current_user.id,
+        username=current_user.username,
+        details=f'Method: {payment_method}. Status: {status_msg}'
+    )
+    db.session.add(history)
+    
+    # Create transaction record
+    txn = Transaction(
+        type='Income',
+        category='Sales',
+        amount=amount,
+        description=f'Payment for Order #{order.id} - {order.customer.name if order.customer else "N/A"}',
+        related_order_id=order.id
+    )
+    db.session.add(txn)
+    
+    db.session.commit()
+    
+    # Send notification
+    send_notification(
+        message=f'Payment received: PKR {amount:,.0f} for Order #{order.id}',
+        type='success',
+        link=url_for('main.view_order', id=order.id)
+    )
+    
+    flash(f'Payment of PKR {amount:,.0f} recorded successfully! Order status: {status_msg}', 'success')
+    return redirect(url_for('main.view_order', id=order_id))
+
+@main_bp.route('/orders/<int:order_id>/payments')
+@login_required
+def view_payments(order_id):
+    from app.models import Payment
+    order = Order.query.get_or_404(order_id)
+    payments = Payment.query.filter_by(order_id=order.id).order_by(Payment.payment_date.desc()).all()
+    
+    total_paid = db.session.query(func.sum(Payment.amount)).filter_by(order_id=order.id).scalar() or 0
+    remaining = order.total_amount - total_paid
+    
+    return render_template('orders/payments.html', 
+                          order=order, 
+                          payments=payments,
+                          total_paid=total_paid,
+                          remaining=remaining)
+
+# ==================== ADVANCED ANALYTICS ====================
+
+@main_bp.route('/analytics')
+@login_required
+def analytics():
+    # Profit Analysis
+    products_with_profit = db.session.query(
+        Product.name,
+        Product.selling_price,
+        Product.cost_price,
+        (Product.selling_price - Product.cost_price).label('profit_per_unit'),
+        func.sum(OrderItem.quantity).label('units_sold'),
+        func.sum(OrderItem.subtotal).label('revenue'),
+        func.sum(OrderItem.quantity * Product.cost_price).label('total_cost')
+    ).join(OrderItem).join(Order).filter(
+        Order.payment_status == 'Paid'
+    ).group_by(Product.id, Product.name, Product.selling_price, Product.cost_price).all()
+    
+    # Calculate total profit
+    total_revenue = sum([p.revenue for p in products_with_profit])
+    total_cost = sum([p.total_cost for p in products_with_profit])
+    total_profit = total_revenue - total_cost
+    
+    # Inventory valuation
+    inventory_value = db.session.query(
+        func.sum(Product.cost_price * Product.stock_quantity)
+    ).scalar() or 0
+    
+    # Top customers by revenue
+    top_customers = db.session.query(
+        Customer.name,
+        func.count(Order.id).label('order_count'),
+        func.sum(Order.total_amount).label('total_spent')
+    ).join(Order).filter(
+        Order.payment_status == 'Paid'
+    ).group_by(Customer.id, Customer.name).order_by(desc('total_spent')).limit(10).all()
+    
+    # Monthly sales trend
+    six_months_ago = datetime.utcnow() - timedelta(days=180)
+    monthly_sales = db.session.query(
+        func.strftime('%Y-%m', Order.order_date).label('month'),
+        func.sum(Order.total_amount).label('revenue'),
+        func.count(Order.id).label('order_count')
+    ).filter(
+        Order.order_date >= six_months_ago,
+        Order.payment_status == 'Paid'
+    ).group_by('month').all()
+    
+    return render_template('analytics/dashboard.html',
+                          products=products_with_profit,
+                          total_revenue=total_revenue,
+                          total_cost=total_cost,
+                          total_profit=total_profit,
+                          profit_margin=(total_profit/total_revenue*100 if total_revenue > 0 else 0),
+                          inventory_value=inventory_value,
+                          top_customers=top_customers,
+                          monthly_sales=monthly_sales)
+
+# ==================== GLOBAL SEARCH ====================
+
+@main_bp.route('/search')
+@login_required
+def global_search():
+    query = request.args.get('q', '').strip()
+    
+    if not query or len(query) < 2:
+        return jsonify({'results': []})
+    
+    results = []
+    
+    # Search Products
+    products = Product.query.filter(
+        (Product.name.contains(query)) | 
+        (Product.sku.contains(query))
+    ).limit(5).all()
+    
+    for p in products:
+        results.append({
+            'type': 'Product',
+            'icon': 'fa-box',
+            'title': p.name,
+            'subtitle': f'SKU: {p.sku} | Stock: {p.stock_quantity}',
+            'url': url_for('main.edit_product', id=p.id)
+        })
+    
+    # Search Customers
+    customers = Customer.query.filter(
+        (Customer.name.contains(query)) | 
+        (Customer.phone.contains(query)) |
+        (Customer.email.contains(query))
+    ).limit(5).all()
+    
+    for c in customers:
+        results.append({
+            'type': 'Customer',
+            'icon': 'fa-user',
+            'title': c.name,
+            'subtitle': f'Phone: {c.phone}',
+            'url': url_for('main.view_customer', id=c.id)
+        })
+    
+    # Search Orders
+    try:
+        order_id = int(query.replace('#', ''))
+        orders = Order.query.filter_by(id=order_id).limit(5).all()
+    except:
+        orders = []
+    
+    for o in orders:
+        results.append({
+            'type': 'Order',
+            'icon': 'fa-shopping-cart',
+            'title': f'Order #{o.id}',
+            'subtitle': f'{o.customer.name if o.customer else "N/A"} | {o.status} | PKR {o.total_amount:,.0f}',
+            'url': url_for('main.view_order', id=o.id)
+        })
+    
+    # Search Suppliers
+    suppliers = Supplier.query.filter(
+        (Supplier.name.contains(query)) |
+        (Supplier.contact_person.contains(query))
+    ).limit(5).all()
+    
+    for s in suppliers:
+        results.append({
+            'type': 'Supplier',
+            'icon': 'fa-truck',
+            'title': s.name,
+            'subtitle': f'Contact: {s.contact_person}',
+            'url': url_for('main.edit_supplier', id=s.id)
+        })
+    
+    return jsonify({'results': results})
+
+# ==================== LOW STOCK ALERTS ====================
+
+@main_bp.route('/check-low-stock')
+@login_required
+def check_low_stock():
+    """Background task to send low stock notifications"""
+    low_stock_items = Product.query.filter(
+        Product.stock_quantity <= Product.reorder_level
+    ).all()
+    
+    if low_stock_items:
+        for item in low_stock_items:
+            # Check if notification already sent today
+            from app.models import Notification
+            today = datetime.utcnow().date()
+            existing = Notification.query.filter(
+                Notification.message.contains(f'Low stock: {item.name}'),
+                func.date(Notification.timestamp) == today
+            ).first()
+            
+            if not existing:
+                send_notification(
+                    message=f'⚠️ Low stock: {item.name} (Only {item.stock_quantity} left, reorder at {item.reorder_level})',
+                    type='warning',
+                    link=url_for('main.edit_product', id=item.id)
+                )
+    
+    return jsonify({'checked': len(low_stock_items), 'alerts_sent': len([i for i in low_stock_items])})

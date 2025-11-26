@@ -137,3 +137,28 @@ class Notification(db.Model):
     
     user = db.relationship('User', backref='notifications')
 
+class Payment(db.Model):
+    __tablename__ = 'payments'
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    payment_method = db.Column(db.String(50))  # Cash, Bank Transfer, Card, etc.
+    payment_date = db.Column(db.DateTime, default=datetime.utcnow)
+    notes = db.Column(db.Text)
+    recorded_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    order = db.relationship('Order', backref='payments')
+    user = db.relationship('User', backref='payments_recorded')
+
+class OrderHistory(db.Model):
+    __tablename__ = 'order_history'
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
+    action = db.Column(db.String(100), nullable=False)  # e.g., "Status changed to Processing"
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    username = db.Column(db.String(64))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    details = db.Column(db.Text)  # Additional details
+    
+    order = db.relationship('Order', backref='history')
+    user = db.relationship('User', backref='order_actions')
