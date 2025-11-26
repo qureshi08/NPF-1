@@ -1325,6 +1325,16 @@ def view_payments(order_id):
     remaining = order.total_amount - total_paid
     
     return render_template('orders/payments.html', 
+                          order=order, 
+                          payments=payments,
+                          total_paid=total_paid,
+                          remaining=remaining)
+
+# ==================== GLOBAL SEARCH ====================
+
+@main_bp.route('/search')
+@login_required
+def global_search():
     query = request.args.get('q', '').strip()
     
     if not query or len(query) < 2:
