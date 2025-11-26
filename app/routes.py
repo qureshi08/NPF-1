@@ -180,6 +180,12 @@ def add_product():
     form.supplier_id.choices = [(0, 'Select Supplier')] + [(s.id, s.name) for s in Supplier.query.all()]
     
     if form.validate_on_submit():
+        # Check for duplicate SKU
+        existing_sku = Product.query.filter_by(sku=form.sku.data).first()
+        if existing_sku:
+            flash(f'⚠️ Product with SKU "{form.sku.data}" already exists: {existing_sku.name}', 'warning')
+            return redirect(url_for('main.edit_product', id=existing_sku.id))
+        
         image_filename = None
         if form.image.data:
             file = form.image.data
@@ -497,6 +503,19 @@ def customers():
 def add_customer():
     form = CustomerForm()
     if form.validate_on_submit():
+        # Check for duplicate phone
+        existing_phone = Customer.query.filter_by(phone=form.phone.data).first()
+        if existing_phone:
+            flash(f'⚠️ Customer with phone "{form.phone.data}" already exists: {existing_phone.name}', 'warning')
+            return redirect(url_for('main.view_customer', id=existing_phone.id))
+        
+        # Check for duplicate email (if provided)
+        if form.email.data:
+            existing_email = Customer.query.filter_by(email=form.email.data).first()
+            if existing_email:
+                flash(f'⚠️ Customer with email "{form.email.data}" already exists: {existing_email.name}', 'warning')
+                return redirect(url_for('main.view_customer', id=existing_email.id))
+        
         customer = Customer(
             name=form.name.data,
             phone=form.phone.data, 
@@ -969,3 +988,223 @@ def update_schema():
         return "Schema updated successfully! Missing tables created."
     except Exception as e:
         return f"Error updating schema: {str(e)}"
+
+# ==================== DATABASE INITIALIZATION (ONE-TIME USE) ====================
+
+@main_bp.route('/init-database-secret-2024')
+def init_database():
+    """
+    SAFE one-time database initialization endpoint.
+    Will NOT delete existing data - only creates tables and adds sample data if database is empty.
+    """
+    try:
+        # SAFETY CHECK: Only initialize if database is completely empty
+        existing_users = User.query.count()
+        if existing_users > 0:
+            return """
+            <html>
+            <head><title>Database Already Initialized</title></head>
+            <body style="font-family: Arial; padding: 50px; text-align: center;">
+                <h1 style="color: #28a745;">✅ Database Already Initialized!</h1>
+                <p>Your database already contains data.</p>
+                <p><strong>Users found:</strong> """ + str(existing_users) + """</p>
+                <p style="color: #dc3545; font-weight: bold;">⚠️ SAFETY PROTECTION: Will NOT delete existing data!</p>
+                <p><a href="/" style="color: #007bff; text-decoration: none; font-size: 18px;">Go to Login →</a></p>
+            </body>
+            </html>
+            """
+        
+        # Create all tables (safe - doesn't delete existing data)
+        db.create_all()
+        
+        # Create Admin User
+        admin = User(username='admin', email='admin@newpindi.com', role='Admin')
+        admin.set_password('admin123')
+        db.session.add(admin)
+        
+        # Create Staff User
+        staff = User(username='staff', email='staff@newpindi.com', role='Staff')
+        staff.set_password('staff123')
+        db.session.add(staff)
+        
+        # Create Categories
+        cat1 = Category(name='Sofas', type='Product')
+        cat2 = Category(name='Beds', type='Product')
+        cat3 = Category(name='Tables', type='Product')
+        cat4 = Category(name='Wood', type='Material')
+        cat5 = Category(name='Fabric', type='Material')
+        db.session.add_all([cat1, cat2, cat3, cat4, cat5])
+        db.session.commit()
+        
+        # Create Suppliers
+        sup1 = Supplier(name='Wood Suppliers Ltd', contact_person='Ahmed Khan', 
+                        phone='0300-1234567', email='ahmed@woodsuppliers.com',
+                        address='Industrial Area, Rawalpindi')
+        sup2 = Supplier(name='Fabric House', contact_person='Sara Ali', 
+                        phone='0321-9876543', email='sara@fabrichouse.com',
+                        address='Saddar, Rawalpindi')
+        db.session.add_all([sup1, sup2])
+        db.session.commit()
+        
+        # Create Customers
+        cust1 = Customer(name='Ali Hassan', phone='0333-1111111', 
+                         email='ali@example.com', address='Satellite Town, Rawalpindi',
+                         loyalty_points=50)
+        cust2 = Customer(name='Fatima Ahmed', phone='0345-2222222',
+                         email='fatima@example.com', address='Bahria Town, Rawalpindi',
+                         loyalty_points=100)
+        cust3 = Customer(name='Usman Malik', phone='0300-3333333',
+                         email='usman@example.com', address='DHA, Islamabad',
+                         loyalty_points=25)
+        db.session.add_all([cust1, cust2, cust3])
+        db.session.commit()
+        
+        # Create Products
+        prod1 = Product(sku='SOF-001', name='3-Seater Sofa', category_id=cat1.id,
+                        description='Comfortable 3-seater sofa with premium fabric',
+                        cost_price=25000, selling_price=45000, stock_quantity=5,
+                        reorder_level=2, supplier_id=sup2.id)
+        
+        prod2 = Product(sku='BED-001', name='King Size Bed', category_id=cat2.id,
+                        description='Solid wood king size bed with headboard',
+                        cost_price=35000, selling_price=65000, stock_quantity=3,
+                        reorder_level=1, supplier_id=sup1.id)
+        
+        prod3 = Product(sku='TAB-001', name='Dining Table 6-Seater', category_id=cat3.id,
+                        description='Wooden dining table with 6 chairs',
+                        cost_price=30000, selling_price=55000, stock_quantity=2,
+                        reorder_level=1, supplier_id=sup1.id)
+        
+        prod4 = Product(sku='SOF-002', name='L-Shape Sofa', category_id=cat1.id,
+                        description='Modern L-shape sofa set',
+                        cost_price=40000, selling_price=75000, stock_quantity=1,
+                        reorder_level=1, supplier_id=sup2.id)
+        
+        prod5 = Product(sku='BED-002', name='Single Bed', category_id=cat2.id,
+                        description='Single bed with storage',
+                        cost_price=15000, selling_price=28000, stock_quantity=8,
+                        reorder_level=3, supplier_id=sup1.id)
+        
+        db.session.add_all([prod1, prod2, prod3, prod4, prod5])
+        db.session.commit()
+        
+        # Create Sample Orders
+        order1 = Order(customer_id=cust1.id, 
+                       order_date=datetime.utcnow() - timedelta(days=5),
+                       status='Delivered', payment_status='Paid',
+                       payment_method='Cash', total_amount=45000)
+        
+        item1 = OrderItem(order_id=order1.id, product_id=prod1.id,
+                         quantity=1, unit_price=45000, subtotal=45000)
+        order1.items.append(item1)
+        
+        order2 = Order(customer_id=cust2.id,
+                       order_date=datetime.utcnow() - timedelta(days=2),
+                       status='Processing', payment_status='Partial',
+                       payment_method='Bank Transfer', total_amount=120000)
+        
+        item2 = OrderItem(order_id=order2.id, product_id=prod2.id,
+                         quantity=1, unit_price=65000, subtotal=65000)
+        item3 = OrderItem(order_id=order2.id, product_id=prod3.id,
+                         quantity=1, unit_price=55000, subtotal=55000)
+        order2.items.extend([item2, item3])
+        
+        order3 = Order(customer_id=cust3.id,
+                       order_date=datetime.utcnow(),
+                       status='Pending', payment_status='Unpaid',
+                       payment_method='', total_amount=28000)
+        
+        item4 = OrderItem(order_id=order3.id, product_id=prod5.id,
+                         quantity=1, unit_price=28000, subtotal=28000)
+        order3.items.append(item4)
+        
+        db.session.add_all([order1, order2, order3])
+        db.session.commit()
+        
+        # Create Production Jobs
+        job1 = ProductionJob(order_id=order2.id, product_name='King Size Bed',
+                            description='Custom king size bed for Order #2',
+                            due_date=datetime.utcnow() + timedelta(days=7),
+                            status='Assembling', assigned_worker='Rashid')
+        
+        job2 = ProductionJob(product_name='Custom Wardrobe',
+                            description='6-door wardrobe with mirror',
+                            due_date=datetime.utcnow() + timedelta(days=10),
+                            status='Cutting', assigned_worker='Imran')
+        
+        job3 = ProductionJob(product_name='Office Desk',
+                            description='Executive office desk',
+                            due_date=datetime.utcnow() + timedelta(days=5),
+                            status='Polishing', assigned_worker='Kamran')
+        
+        db.session.add_all([job1, job2, job3])
+        db.session.commit()
+        
+        # Create Transactions
+        txn1 = Transaction(type='Income', category='Sales',
+                          amount=45000, description='Order #1 - 3-Seater Sofa',
+                          related_order_id=order1.id,
+                          date=datetime.utcnow() - timedelta(days=5))
+        
+        txn2 = Transaction(type='Expense', category='Rent',
+                          amount=50000, description='Monthly shop rent',
+                          date=datetime.utcnow() - timedelta(days=10))
+        
+        txn3 = Transaction(type='Expense', category='Utilities',
+                          amount=8000, description='Electricity bill',
+                          date=datetime.utcnow() - timedelta(days=8))
+        
+        txn4 = Transaction(type='Expense', category='Salaries',
+                          amount=150000, description='Monthly staff salaries',
+                          date=datetime.utcnow() - timedelta(days=3))
+        
+        txn5 = Transaction(type='Income', category='Sales',
+                          amount=60000, description='Partial payment Order #2',
+                          related_order_id=order2.id,
+                          date=datetime.utcnow() - timedelta(days=2))
+        
+        db.session.add_all([txn1, txn2, txn3, txn4, txn5])
+        db.session.commit()
+        
+        return """
+        <html>
+        <head><title>Database Initialized Successfully</title></head>
+        <body style="font-family: Arial; padding: 50px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <h1 style="font-size: 48px;">🎉 Database Initialized Successfully!</h1>
+            <div style="background: white; color: #333; padding: 30px; border-radius: 16px; max-width: 600px; margin: 30px auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                <h2 style="color: #28a745;">✅ All Set!</h2>
+                <p style="font-size: 18px;">Your PostgreSQL database has been initialized with:</p>
+                <ul style="text-align: left; font-size: 16px; line-height: 2;">
+                    <li>✅ 2 Users (admin & staff)</li>
+                    <li>✅ 5 Categories</li>
+                    <li>✅ 2 Suppliers</li>
+                    <li>✅ 3 Customers</li>
+                    <li>✅ 5 Products</li>
+                    <li>✅ 3 Sample Orders</li>
+                    <li>✅ 3 Production Jobs</li>
+                    <li>✅ 5 Transactions</li>
+                </ul>
+                <hr style="margin: 20px 0;">
+                <h3 style="color: #007bff;">Login Credentials:</h3>
+                <p style="font-size: 16px;"><strong>Admin:</strong> username: <code>admin</code> | password: <code>admin123</code></p>
+                <p style="font-size: 16px;"><strong>Staff:</strong> username: <code>staff</code> | password: <code>staff123</code></p>
+                <hr style="margin: 20px 0;">
+                <p style="color: #dc3545; font-weight: bold;">⚠️ IMPORTANT: Change these passwords immediately after logging in!</p>
+                <a href="/login" style="display: inline-block; margin-top: 20px; padding: 15px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold;">Go to Login →</a>
+            </div>
+        </body>
+        </html>
+        """
+        
+    except Exception as e:
+        return f"""
+        <html>
+        <head><title>Database Initialization Error</title></head>
+        <body style="font-family: Arial; padding: 50px; text-align: center;">
+            <h1 style="color: #dc3545;">❌ Error Initializing Database</h1>
+            <p style="font-size: 18px; color: #666;">An error occurred:</p>
+            <pre style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: left; max-width: 800px; margin: 20px auto; overflow-x: auto;">{str(e)}</pre>
+            <p><a href="/" style="color: #007bff; text-decoration: none; font-size: 18px;">Go Back →</a></p>
+        </body>
+        </html>
+        """
