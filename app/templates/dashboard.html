@@ -1,98 +1,96 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="fas fa-tachometer-alt me-2 text-primary"></i>Business Dashboard</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4">
+    <h1 class="h2"><i class="fas fa-chart-line me-2 text-primary"></i>Business Dashboard</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
-            <a href="{{ url_for('main.export_products') }}" class="btn btn-sm btn-outline-success">
-                <i class="fas fa-file-excel me-1"></i>Export Products
+            <a href="{{ url_for('main.export_products') }}" class="btn btn-sm btn-success">
+                <i class="fas fa-file-excel me-1"></i>Products
             </a>
-            <a href="{{ url_for('main.export_orders') }}" class="btn btn-sm btn-outline-primary">
-                <i class="fas fa-file-excel me-1"></i>Export Orders
+            <a href="{{ url_for('main.export_orders') }}" class="btn btn-sm btn-success">
+                <i class="fas fa-file-excel me-1"></i>Orders
             </a>
-            <a href="{{ url_for('main.export_transactions') }}" class="btn btn-sm btn-outline-info">
-                <i class="fas fa-file-excel me-1"></i>Export Transactions
+            <a href="{{ url_for('main.export_transactions') }}" class="btn btn-sm btn-success">
+                <i class="fas fa-file-excel me-1"></i>Transactions
             </a>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
-            <i class="fas fa-sync-alt me-1"></i>Refresh
-        </button>
     </div>
 </div>
 
-<!-- Financial Summary Cards -->
+<!-- Key Financial Metrics -->
 <div class="row mb-4">
-    <div class="col-md-3 mb-3">
+    <div class="col-lg-3 col-md-6 mb-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body"
                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px;">
                 <div class="d-flex justify-content-between align-items-center text-white">
                     <div>
                         <h6 class="mb-1 text-uppercase"
-                            style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.75rem;">Total Revenue
+                            style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.7rem;">Total Revenue
                         </h6>
-                        <h2 class="mb-0 fw-bold" style="color: white;">PKR {{ "{:,.0f}".format(total_revenue) }}</h2>
-                        <small style="color: rgba(255,255,255,0.7);">All paid orders</small>
+                        <h2 class="mb-0 fw-bold">PKR {{ "{:,.0f}".format(total_revenue) }}</h2>
+                        <small style="color: rgba(255,255,255,0.7); font-size: 0.75rem;">From paid orders</small>
                     </div>
-                    <div class="fs-1" style="opacity: 0.3;">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body"
-                style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 10px;">
-                <div class="d-flex justify-content-between align-items-center text-white">
-                    <div>
-                        <h6 class="mb-1 text-uppercase"
-                            style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.75rem;">Total Cost</h6>
-                        <h2 class="mb-0 fw-bold" style="color: white;">PKR {{ "{:,.0f}".format(total_cost) }}</h2>
-                        <small style="color: rgba(255,255,255,0.7);">Product costs</small>
-                    </div>
-                    <div class="fs-1" style="opacity: 0.3;">
-                        <i class="fas fa-receipt"></i>
+                    <div class="fs-1" style="opacity: 0.25;">
+                        <i class="fas fa-money-bill-wave"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
+    <div class="col-lg-3 col-md-6 mb-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body"
-                style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); border-radius: 10px;">
+                style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 10px;">
                 <div class="d-flex justify-content-between align-items-center text-white">
                     <div>
                         <h6 class="mb-1 text-uppercase"
-                            style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.75rem;">Net Profit</h6>
-                        <h2 class="mb-0 fw-bold" style="color: white;">PKR {{ "{:,.0f}".format(total_profit) }}</h2>
-                        <small style="color: rgba(255,255,255,0.7);">Margin: {{ "{:.1f}".format(profit_margin)
-                            }}%</small>
+                            style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.7rem;">Net Profit</h6>
+                        <h2 class="mb-0 fw-bold">PKR {{ "{:,.0f}".format(total_profit) }}</h2>
+                        <small style="color: rgba(255,255,255,0.7); font-size: 0.75rem;">{{
+                            "{:.1f}".format(profit_margin) }}% margin</small>
                     </div>
-                    <div class="fs-1" style="opacity: 0.3;">
+                    <div class="fs-1" style="opacity: 0.25;">
                         <i class="fas fa-chart-line"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
+    <div class="col-lg-3 col-md-6 mb-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body"
-                style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); border-radius: 10px;">
+                style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); border-radius: 10px;">
                 <div class="d-flex justify-content-between align-items-center text-white">
                     <div>
                         <h6 class="mb-1 text-uppercase"
-                            style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.75rem;">Inventory Value
+                            style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.7rem;">Inventory Value
                         </h6>
-                        <h2 class="mb-0 fw-bold" style="color: white;">PKR {{ "{:,.0f}".format(inventory_value) }}</h2>
-                        <small style="color: rgba(255,255,255,0.7);">Stock valuation</small>
+                        <h2 class="mb-0 fw-bold">PKR {{ "{:,.0f}".format(inventory_value) }}</h2>
+                        <small style="color: rgba(255,255,255,0.7); font-size: 0.75rem;">Current stock</small>
                     </div>
-                    <div class="fs-1" style="opacity: 0.3;">
-                        <i class="fas fa-boxes"></i>
+                    <div class="fs-1" style="opacity: 0.25;">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body"
+                style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 10px;">
+                <div class="d-flex justify-content-between align-items-center text-white">
+                    <div>
+                        <h6 class="mb-1 text-uppercase"
+                            style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.7rem;">Pending Orders
+                        </h6>
+                        <h2 class="mb-0 fw-bold">{{ pending_orders }}</h2>
+                        <small style="color: rgba(255,255,255,0.7); font-size: 0.75rem;">Need attention</small>
+                    </div>
+                    <div class="fs-1" style="opacity: 0.25;">
+                        <i class="fas fa-clock"></i>
                     </div>
                 </div>
             </div>
@@ -100,69 +98,85 @@
     </div>
 </div>
 
-<!-- Operational KPIs -->
+<!-- Alerts & Quick Stats -->
 <div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="fas fa-shopping-cart fa-2x text-warning mb-2"></i>
-                <h3 class="mb-0 fw-bold">{{ pending_orders }}</h3>
-                <small class="text-muted">Pending Orders</small>
+    {% if low_stock_count > 0 %}
+    <div class="col-md-4 mb-3">
+        <div class="card border-danger shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="mb-0 fw-bold text-danger">{{ low_stock_count }}</h4>
+                        <small class="text-muted">Low Stock Items</small>
+                    </div>
+                    <a href="{{ url_for('main.inventory') }}" class="btn btn-sm btn-outline-danger">View</a>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
-                <h3 class="mb-0 fw-bold">{{ low_stock_count }}</h3>
-                <small class="text-muted">Low Stock Items</small>
+    {% endif %}
+    <div class="col-md-4 mb-3">
+        <div class="card border-info shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-hammer fa-2x text-info"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="mb-0 fw-bold text-info">{{ active_jobs }}</h4>
+                        <small class="text-muted">Active Production</small>
+                    </div>
+                    <a href="{{ url_for('main.production') }}" class="btn btn-sm btn-outline-info">View</a>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="fas fa-hammer fa-2x text-info mb-2"></i>
-                <h3 class="mb-0 fw-bold">{{ active_jobs }}</h3>
-                <small class="text-muted">Active Production Jobs</small>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
-                <h3 class="mb-0 fw-bold">PKR {{ "{:,.0f}".format(total_sales) }}</h3>
-                <small class="text-muted">Total Sales</small>
+    <div class="col-md-4 mb-3">
+        <div class="card border-success shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-users fa-2x text-success"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="mb-0 fw-bold text-success">{{ top_customers|length }}</h4>
+                        <small class="text-muted">Top Customers</small>
+                    </div>
+                    <a href="{{ url_for('main.customers') }}" class="btn btn-sm btn-outline-success">View</a>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Charts Row -->
+<!-- Charts & Analytics -->
 <div class="row mb-4">
-    <!-- Sales Trend Chart -->
-    <div class="col-md-8 mb-4">
+    <!-- Sales Trend -->
+    <div class="col-lg-8 mb-4">
         <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-chart-line me-2"></i>Sales Trend (Last 7 Days)
-                </h5>
+            <div class="card-header bg-white border-bottom py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-chart-area me-2"></i>Sales Trend</h5>
+                    <span class="badge bg-light text-dark">Last 7 Days</span>
+                </div>
             </div>
             <div class="card-body">
-                <canvas id="salesChart" height="300"></canvas>
+                <canvas id="salesChart" height="280"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Top Products Chart -->
-    <div class="col-md-4 mb-4">
+    <!-- Top Products -->
+    <div class="col-lg-4 mb-4">
         <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-chart-pie me-2"></i>Top Products</h5>
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-star me-2"></i>Top Products</h5>
             </div>
             <div class="card-body">
-                <canvas id="productsChart" height="300"></canvas>
+                <canvas id="productsChart" height="280"></canvas>
             </div>
         </div>
     </div>
@@ -170,33 +184,32 @@
 
 <!-- Product Profitability & Top Customers -->
 <div class="row mb-4">
-    <!-- Product Profitability Analysis -->
-    <div class="col-md-8 mb-4">
+    <!-- Product Profitability -->
+    <div class="col-lg-7 mb-4">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-chart-bar me-2"></i>Product Profitability
-                    Analysis</h5>
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-chart-bar me-2"></i>Product Profitability</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
+                        <thead class="table-light">
                             <tr>
-                                <th class="ps-4">Product Name</th>
-                                <th>Units Sold</th>
-                                <th>Revenue</th>
-                                <th>Profit</th>
-                                <th>Margin</th>
+                                <th class="ps-4">Product</th>
+                                <th class="text-center">Sold</th>
+                                <th class="text-end">Revenue</th>
+                                <th class="text-end">Profit</th>
+                                <th class="text-center">Margin</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for p in products_with_profit[:10] %}
+                            {% for p in products_with_profit[:8] %}
                             <tr>
                                 <td class="ps-4 fw-medium">{{ p.name }}</td>
-                                <td>{{ p.units_sold }}</td>
-                                <td>PKR {{ "{:,.0f}".format(p.revenue) }}</td>
-                                <td class="text-success fw-bold">PKR {{ "{:,.0f}".format(p.profit) }}</td>
-                                <td>
+                                <td class="text-center">{{ p.units_sold }}</td>
+                                <td class="text-end">PKR {{ "{:,.0f}".format(p.revenue) }}</td>
+                                <td class="text-end text-success fw-bold">PKR {{ "{:,.0f}".format(p.profit) }}</td>
+                                <td class="text-center">
                                     <span
                                         class="badge bg-{{ 'success' if p.margin > 20 else 'warning' if p.margin > 10 else 'danger' }}">
                                         {{ "{:.1f}".format(p.margin) }}%
@@ -216,20 +229,22 @@
     </div>
 
     <!-- Top Customers -->
-    <div class="col-md-4 mb-4">
+    <div class="col-lg-5 mb-4">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-users me-2"></i>Top Customers</h5>
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-trophy me-2"></i>Top Customers</h5>
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
                     {% for c in top_customers %}
                     <div class="list-group-item px-4 py-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <h6 class="mb-0 fw-bold">{{ c.name }}</h6>
-                            <span class="badge bg-primary rounded-pill">{{ c.orders_count }} Orders</span>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ c.name }}</h6>
+                                <small class="text-muted">{{ c.email or c.phone }}</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ c.orders_count }}</span>
                         </div>
-                        <small class="text-muted d-block mb-1">{{ c.email or c.phone }}</small>
                         <div class="fw-bold text-success">PKR {{ "{:,.0f}".format(c.total_spent) }}</div>
                     </div>
                     {% else %}
@@ -244,47 +259,41 @@
 <!-- Recent Orders & Quick Actions -->
 <div class="row">
     <!-- Recent Orders -->
-    <div class="col-md-8 mb-4">
+    <div class="col-lg-8 mb-4">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
-                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-shopping-bag me-2"></i>Recent Orders</h5>
-                <a href="{{ url_for('main.orders') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            <div class="card-header bg-white border-bottom py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-shopping-bag me-2"></i>Recent Orders</h5>
+                    <a href="{{ url_for('main.orders') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover table-sm mb-0">
+                    <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-4">Order ID</th>
+                                <th class="ps-4">Order</th>
                                 <th>Date</th>
                                 <th>Customer</th>
                                 <th>Status</th>
-                                <th>Total</th>
-                                <th>Action</th>
+                                <th class="text-end pe-4">Amount</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for order in recent_orders %}
                             <tr>
-                                <td class="ps-4"><strong>#{{ order.id }}</strong></td>
-                                <td>{{ order.order_date.strftime('%Y-%m-%d') }}</td>
-                                <td>{{ order.customer.name if order.customer else '-' }}</td>
-                                <td>
-                                    {% if order.status == 'Delivered' %}
-                                    <span class="badge bg-success">{{ order.status }}</span>
-                                    {% elif order.status == 'Pending' %}
-                                    <span class="badge bg-warning text-dark">{{ order.status }}</span>
-                                    {% else %}
-                                    <span class="badge bg-info">{{ order.status }}</span>
-                                    {% endif %}
+                                <td class="ps-4">
+                                    <strong>#{{ order.id }}</strong>
                                 </td>
-                                <td><strong>PKR {{ "{:,.0f}".format(order.total_amount) }}</strong></td>
+                                <td>{{ order.order_date.strftime('%d %b, %Y') }}</td>
+                                <td>{{ order.customer.name if order.customer else 'Walk-in' }}</td>
                                 <td>
-                                    <a href="{{ url_for('main.view_order', id=order.id) }}"
-                                        class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
+                                    <span
+                                        class="badge bg-{{ 'success' if order.status == 'Delivered' else 'warning' if order.status == 'Pending' else 'info' }}">
+                                        {{ order.status }}
+                                    </span>
                                 </td>
+                                <td class="text-end pe-4 fw-bold">PKR {{ "{:,.0f}".format(order.total_amount) }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -294,8 +303,9 @@
         </div>
     </div>
 
-    <!-- Quick Actions & Alerts -->
-    <div class="col-md-4 mb-4">
+    <!-- Quick Actions & Low Stock -->
+    <div class="col-lg-4 mb-4">
+        <!-- Quick Actions -->
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-header bg-white border-bottom py-3">
                 <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
@@ -305,39 +315,39 @@
                     <a href="{{ url_for('main.create_order') }}" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>New Order
                     </a>
-                    <a href="{{ url_for('main.add_product') }}" class="btn btn-secondary">
+                    <a href="{{ url_for('main.add_product') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-box me-2"></i>Add Product
                     </a>
-                    <a href="{{ url_for('main.add_job') }}" class="btn btn-info text-white">
-                        <i class="fas fa-hammer me-2"></i>New Production Job
-                    </a>
-                    <a href="{{ url_for('main.add_customer') }}" class="btn btn-success">
+                    <a href="{{ url_for('main.add_customer') }}" class="btn btn-outline-success">
                         <i class="fas fa-user-plus me-2"></i>Add Customer
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Low Stock Alerts -->
+        <!-- Low Stock Alert -->
         {% if low_stock_items %}
-        <div class="card border-0 shadow-sm border-danger">
+        <div class="card border-danger shadow-sm">
             <div class="card-header bg-danger text-white py-3">
-                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Low Stock Alert</h5>
+                <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Low Stock Alert</h6>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 <div class="list-group list-group-flush">
-                    {% for item in low_stock_items %}
-                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center border-0">
+                    {% for item in low_stock_items[:5] %}
+                    <div class="list-group-item px-3 py-2 d-flex justify-content-between align-items-center">
                         <div>
-                            <strong>{{ item.name }}</strong>
-                            <br><small class="text-muted">Reorder at: {{ item.reorder_level }}</small>
+                            <strong class="d-block">{{ item.name }}</strong>
+                            <small class="text-muted">Reorder: {{ item.reorder_level }}</small>
                         </div>
-                        <span class="badge bg-danger">{{ item.stock_quantity }}</span>
+                        <span class="badge bg-danger rounded-pill">{{ item.stock_quantity }}</span>
                     </div>
                     {% endfor %}
                 </div>
-                <a href="{{ url_for('main.inventory') }}" class="btn btn-sm btn-outline-danger mt-2 w-100">Manage
-                    Inventory</a>
+                <div class="card-footer bg-white">
+                    <a href="{{ url_for('main.inventory') }}" class="btn btn-sm btn-outline-danger w-100">
+                        Manage Inventory
+                    </a>
+                </div>
             </div>
         </div>
         {% endif %}
@@ -347,25 +357,27 @@
 
 {% block scripts %}
 <script>
-    // Sales Chart
+    // Sales Trend Chart
     const salesCtx = document.getElementById('salesChart').getContext('2d');
     new Chart(salesCtx, {
         type: 'line',
         data: {
             labels: {{ sales_dates | tojson }},
         datasets: [{
-            label: 'Sales (PKR)',
+            label: 'Daily Sales',
             data: {{ sales_amounts | tojson }},
-        borderColor: '#0d6efd',
-        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+        borderColor: '#667eea',
+        backgroundColor: 'rgba(102, 126, 234, 0.1)',
         tension: 0.4,
         fill: true,
         borderWidth: 3,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        pointBackgroundColor: '#0d6efd',
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBackgroundColor: '#667eea',
         pointBorderColor: '#fff',
-        pointBorderWidth: 2
+        pointBorderWidth: 2,
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: '#667eea'
             }]
         },
         options: {
@@ -376,6 +388,14 @@
                 display: false
             },
             tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                titleFont: {
+                    size: 14
+                },
+                bodyFont: {
+                    size: 13
+                },
                 callbacks: {
                     label: function (context) {
                         return 'Sales: PKR ' + context.parsed.y.toLocaleString();
@@ -392,7 +412,8 @@
                     }
                 },
                 grid: {
-                    borderDash: [2, 4]
+                    borderDash: [5, 5],
+                    color: 'rgba(0, 0, 0, 0.05)'
                 }
             },
             x: {
@@ -404,7 +425,7 @@
     }
     });
 
-    // Top Products Chart
+    // Top Products Doughnut Chart
     const productsCtx = document.getElementById('productsChart').getContext('2d');
     new Chart(productsCtx, {
         type: 'doughnut',
@@ -413,9 +434,14 @@
         datasets: [{
             data: [{% for p in top_products_chart %}{{ p.revenue }}, {% endfor %}],
         backgroundColor: [
-        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'
+        '#667eea',
+        '#11998e',
+        '#fa709a',
+        '#f093fb',
+        '#fee140'
     ],
-        hoverOffset: 4
+        borderWidth: 0,
+        hoverOffset: 10
             }]
         },
         options: {
@@ -425,10 +451,16 @@
             legend: {
                 position: 'bottom',
                 labels: {
-                    boxWidth: 12
+                    boxWidth: 12,
+                    padding: 15,
+                    font: {
+                        size: 11
+                    }
                 }
             },
             tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
                 callbacks: {
                     label: function (context) {
                         return context.label + ': PKR ' + context.parsed.toLocaleString();
