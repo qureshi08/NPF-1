@@ -166,8 +166,6 @@
         <a href="{{ url_for('main.finance') }}"
             class="{{ 'active' if 'finance' in request.endpoint or 'transaction' in request.endpoint else '' }}"><i
                 class="fas fa-chart-line me-2"></i> Finance</a>
-        <a href="{{ url_for('main.reports') }}" class="{{ 'active' if 'report' in request.endpoint else '' }}"><i
-                class="fas fa-file-alt me-2"></i> Reports</a>
         {% if current_user.role == 'Admin' %}
         <a href="{{ url_for('main.settings') }}" class="{{ 'active' if 'settings' in request.endpoint else '' }}"><i
                 class="fas fa-cog me-2"></i> Settings</a>

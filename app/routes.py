@@ -106,6 +106,7 @@ def mark_all_notifications_read():
 @main_bp.route('/')
 @login_required
 def index():
+    # Basic KPIs
     total_sales = db.session.query(func.sum(Order.total_amount)).filter(Order.payment_status == 'Paid').scalar() or 0
     pending_orders = Order.query.filter_by(status='Pending').count()
     low_stock_count = Product.query.filter(Product.stock_quantity <= Product.reorder_level).count()
@@ -114,6 +115,7 @@ def index():
     recent_orders = Order.query.order_by(Order.order_date.desc()).limit(5).all()
     low_stock_items = get_low_stock_items()[:5]
     
+    # Sales trend data (last 7 days)
     seven_days_ago = datetime.utcnow() - timedelta(days=7)
     daily_sales = db.session.query(
         func.date(Order.order_date).label('date'),
@@ -123,11 +125,63 @@ def index():
     sales_dates = [str(sale.date) for sale in daily_sales]
     sales_amounts = [float(sale.total) for sale in daily_sales]
     
-    top_products = db.session.query(
+    # Profit Analysis
+    products_query = db.session.query(
         Product.name,
-        func.sum(OrderItem.quantity).label('total_sold'),
-        func.sum(OrderItem.subtotal).label('revenue')
-    ).join(OrderItem).join(Order).filter(Order.payment_status == 'Paid').group_by(Product.id, Product.name).order_by(desc('revenue')).limit(5).all()
+        Product.selling_price,
+        Product.cost_price,
+        (Product.selling_price - Product.cost_price).label('profit_per_unit'),
+        func.sum(OrderItem.quantity).label('units_sold'),
+        func.sum(OrderItem.subtotal).label('revenue'),
+        func.sum(OrderItem.quantity * Product.cost_price).label('total_cost')
+    ).join(OrderItem).join(Order).filter(
+        Order.payment_status == 'Paid'
+    ).group_by(Product.id, Product.name, Product.selling_price, Product.cost_price).all()
+    
+    # Process products to add calculated fields
+    products_with_profit = []
+    for p in products_query:
+        revenue = p.revenue or 0
+        total_cost = p.total_cost or 0
+        profit = revenue - total_cost
+        margin = (profit / revenue * 100) if revenue > 0 else 0
+        
+        products_with_profit.append({
+            'name': p.name,
+            'selling_price': p.selling_price,
+            'cost_price': p.cost_price,
+            'profit_per_unit': p.profit_per_unit,
+            'units_sold': p.units_sold,
+            'revenue': revenue,
+            'total_cost': total_cost,
+            'profit': profit,
+            'margin': margin
+        })
+    
+    # Calculate total profit
+    total_revenue = sum([p['revenue'] for p in products_with_profit])
+    total_cost = sum([p['total_cost'] for p in products_with_profit])
+    total_profit = total_revenue - total_cost
+    profit_margin = (total_profit/total_revenue*100 if total_revenue > 0 else 0)
+    
+    # Inventory valuation
+    inventory_value = db.session.query(
+        func.sum(Product.cost_price * Product.stock_quantity)
+    ).scalar() or 0
+    
+    # Top customers by revenue
+    top_customers = db.session.query(
+        Customer.name,
+        Customer.email,
+        Customer.phone,
+        func.count(Order.id).label('orders_count'),
+        func.sum(Order.total_amount).label('total_spent')
+    ).join(Order).filter(
+        Order.payment_status == 'Paid'
+    ).group_by(Customer.id, Customer.name, Customer.email, Customer.phone).order_by(desc('total_spent')).limit(5).all()
+    
+    # Top products for chart
+    top_products_chart = sorted(products_with_profit, key=lambda x: x['revenue'] or 0, reverse=True)[:5]
     
     return render_template('dashboard.html', title='Dashboard', 
                            total_sales=total_sales, 
@@ -138,7 +192,14 @@ def index():
                            low_stock_items=low_stock_items,
                            sales_dates=sales_dates,
                            sales_amounts=sales_amounts,
-                           top_products=top_products)
+                           products_with_profit=products_with_profit,
+                           total_revenue=total_revenue,
+                           total_cost=total_cost,
+                           total_profit=total_profit,
+                           profit_margin=profit_margin,
+                           inventory_value=inventory_value,
+                           top_customers=top_customers,
+                           top_products_chart=top_products_chart)
 
 # ==================== INVENTORY ====================
 
