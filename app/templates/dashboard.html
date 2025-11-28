@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Header -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4">
     <h1 class="h2"><i class="fas fa-chart-line me-2 text-primary"></i>Business Dashboard</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
@@ -18,9 +19,32 @@
     </div>
 </div>
 
-<!-- Key Financial Metrics -->
+<!-- Quick Actions Toolbar -->
 <div class="row mb-4">
-    <div class="col-lg-3 col-md-6 mb-3">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body py-3">
+                <div class="d-flex gap-3 align-items-center flex-wrap">
+                    <h5 class="mb-0 me-3 fw-bold text-primary"><i class="fas fa-bolt me-2"></i>Quick Actions:</h5>
+                    <a href="{{ url_for('main.create_order') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>New Order
+                    </a>
+                    <a href="{{ url_for('main.add_product') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-box me-2"></i>Add Product
+                    </a>
+                    <a href="{{ url_for('main.add_customer') }}" class="btn btn-outline-success">
+                        <i class="fas fa-user-plus me-2"></i>Add Customer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Financial Metrics (Money Only) -->
+<div class="row mb-4">
+    <!-- Revenue -->
+    <div class="col-md-4 mb-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body"
                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px;">
@@ -29,17 +53,16 @@
                         <h6 class="mb-1 text-uppercase"
                             style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.7rem;">Total Revenue
                         </h6>
-                        <h2 class="mb-0 fw-bold">PKR {{ "{:,.0f}".format(total_revenue) }}</h2>
+                        <h2 class="mb-0 fw-bold text-white">PKR {{ "{:,.0f}".format(total_revenue) }}</h2>
                         <small style="color: rgba(255,255,255,0.7); font-size: 0.75rem;">From paid orders</small>
                     </div>
-                    <div class="fs-1" style="opacity: 0.25;">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
+                    <div class="fs-1" style="opacity: 0.25;"><i class="fas fa-money-bill-wave"></i></div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 mb-3">
+    <!-- Net Profit -->
+    <div class="col-md-4 mb-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body"
                 style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 10px;">
@@ -47,18 +70,17 @@
                     <div>
                         <h6 class="mb-1 text-uppercase"
                             style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.7rem;">Net Profit</h6>
-                        <h2 class="mb-0 fw-bold">PKR {{ "{:,.0f}".format(total_profit) }}</h2>
+                        <h2 class="mb-0 fw-bold text-white">PKR {{ "{:,.0f}".format(total_profit) }}</h2>
                         <small style="color: rgba(255,255,255,0.7); font-size: 0.75rem;">{{
                             "{:.1f}".format(profit_margin) }}% margin</small>
                     </div>
-                    <div class="fs-1" style="opacity: 0.25;">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
+                    <div class="fs-1" style="opacity: 0.25;"><i class="fas fa-chart-line"></i></div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 mb-3">
+    <!-- Inventory Value -->
+    <div class="col-md-4 mb-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body"
                 style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); border-radius: 10px;">
@@ -67,38 +89,17 @@
                         <h6 class="mb-1 text-uppercase"
                             style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.7rem;">Inventory Value
                         </h6>
-                        <h2 class="mb-0 fw-bold">PKR {{ "{:,.0f}".format(inventory_value) }}</h2>
+                        <h2 class="mb-0 fw-bold text-white">PKR {{ "{:,.0f}".format(inventory_value) }}</h2>
                         <small style="color: rgba(255,255,255,0.7); font-size: 0.75rem;">Current stock</small>
                     </div>
-                    <div class="fs-1" style="opacity: 0.25;">
-                        <i class="fas fa-warehouse"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body"
-                style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 10px;">
-                <div class="d-flex justify-content-between align-items-center text-white">
-                    <div>
-                        <h6 class="mb-1 text-uppercase"
-                            style="color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.7rem;">Pending Orders
-                        </h6>
-                        <h2 class="mb-0 fw-bold">{{ pending_orders }}</h2>
-                        <small style="color: rgba(255,255,255,0.7); font-size: 0.75rem;">Need attention</small>
-                    </div>
-                    <div class="fs-1" style="opacity: 0.25;">
-                        <i class="fas fa-clock"></i>
-                    </div>
+                    <div class="fs-1" style="opacity: 0.25;"><i class="fas fa-warehouse"></i></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Charts & Analytics -->
+<!-- Charts Row -->
 <div class="row mb-4">
     <!-- Sales Trend -->
     <div class="col-lg-8 mb-4">
@@ -114,8 +115,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Top Products -->
+    <!-- Top Products Chart -->
     <div class="col-lg-4 mb-4">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white border-bottom py-3">
@@ -128,11 +128,50 @@
     </div>
 </div>
 
-<!-- Product Profitability & Top Customers -->
-<div class="row mb-4">
-    <!-- Product Profitability -->
-    <div class="col-lg-7 mb-4">
-        <div class="card border-0 shadow-sm">
+<!-- Main Content Grid -->
+<div class="row">
+    <!-- Left Column (Tables) -->
+    <div class="col-lg-8">
+        <!-- Recent Orders -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-shopping-bag me-2"></i>Recent Orders</h5>
+                    <a href="{{ url_for('main.orders') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Order</th>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td class="ps-4"><strong>#{{ order.id }}</strong></td>
+                                <td>{{ order.order_date.strftime('%d %b, %Y') }}</td>
+                                <td>{{ order.customer.name if order.customer else 'Walk-in' }}</td>
+                                <td><span
+                                        class="badge bg-{{ 'success' if order.status == 'Delivered' else 'warning' if order.status == 'Pending' else 'info' }}">{{
+                                        order.status }}</span></td>
+                                <td class="text-end pe-4 fw-bold">PKR {{ "{:,.0f}".format(order.total_amount) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Profitability -->
+        <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white border-bottom py-3">
                 <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-chart-bar me-2"></i>Product Profitability</h5>
             </div>
@@ -157,9 +196,8 @@
                                 <td class="text-end text-success fw-bold">PKR {{ "{:,.0f}".format(p.profit) }}</td>
                                 <td class="text-center">
                                     <span
-                                        class="badge bg-{{ 'success' if p.margin > 20 else 'warning' if p.margin > 10 else 'danger' }}">
-                                        {{ "{:.1f}".format(p.margin) }}%
-                                    </span>
+                                        class="badge bg-{{ 'success' if p.margin > 20 else 'warning' if p.margin > 10 else 'danger' }}">{{
+                                        "{:.1f}".format(p.margin) }}%</span>
                                 </td>
                             </tr>
                             {% else %}
@@ -174,106 +212,11 @@
         </div>
     </div>
 
-    <!-- Top Customers -->
-    <div class="col-lg-5 mb-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-bottom py-3">
-                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-trophy me-2"></i>Top Customers</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    {% for c in top_customers %}
-                    <div class="list-group-item px-4 py-3">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <h6 class="mb-1 fw-bold">{{ c.name }}</h6>
-                                <small class="text-muted">{{ c.email or c.phone }}</small>
-                            </div>
-                            <span class="badge bg-primary rounded-pill">{{ c.orders_count }}</span>
-                        </div>
-                        <div class="fw-bold text-success">PKR {{ "{:,.0f}".format(c.total_spent) }}</div>
-                    </div>
-                    {% else %}
-                    <div class="p-4 text-center text-muted">No customer data available</div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Recent Orders & Quick Actions -->
-<div class="row">
-    <!-- Recent Orders -->
-    <div class="col-lg-8 mb-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-bottom py-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-shopping-bag me-2"></i>Recent Orders</h5>
-                    <a href="{{ url_for('main.orders') }}" class="btn btn-sm btn-outline-primary">View All</a>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="ps-4">Order</th>
-                                <th>Date</th>
-                                <th>Customer</th>
-                                <th>Status</th>
-                                <th class="text-end pe-4">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for order in recent_orders %}
-                            <tr>
-                                <td class="ps-4">
-                                    <strong>#{{ order.id }}</strong>
-                                </td>
-                                <td>{{ order.order_date.strftime('%d %b, %Y') }}</td>
-                                <td>{{ order.customer.name if order.customer else 'Walk-in' }}</td>
-                                <td>
-                                    <span
-                                        class="badge bg-{{ 'success' if order.status == 'Delivered' else 'warning' if order.status == 'Pending' else 'info' }}">
-                                        {{ order.status }}
-                                    </span>
-                                </td>
-                                <td class="text-end pe-4 fw-bold">PKR {{ "{:,.0f}".format(order.total_amount) }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions & Low Stock -->
-    <div class="col-lg-4 mb-4">
-        <!-- Quick Actions -->
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white border-bottom py-3">
-                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('main.create_order') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>New Order
-                    </a>
-                    <a href="{{ url_for('main.add_product') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-box me-2"></i>Add Product
-                    </a>
-                    <a href="{{ url_for('main.add_customer') }}" class="btn btn-outline-success">
-                        <i class="fas fa-user-plus me-2"></i>Add Customer
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Active Production List -->
+    <!-- Right Column (Lists) -->
+    <div class="col-lg-4">
+        <!-- Active Production -->
         {% if active_jobs_list %}
-        <div class="card border-info shadow-sm mb-3">
+        <div class="card border-info shadow-sm mb-4">
             <div class="card-header bg-info text-white py-3">
                 <h6 class="mb-0"><i class="fas fa-hammer me-2"></i>Active Production</h6>
             </div>
@@ -296,9 +239,8 @@
                     {% endfor %}
                 </div>
                 <div class="card-footer bg-white">
-                    <a href="{{ url_for('main.production') }}" class="btn btn-sm btn-outline-info w-100">
-                        View All Jobs
-                    </a>
+                    <a href="{{ url_for('main.production') }}" class="btn btn-sm btn-outline-info w-100">View All
+                        Jobs</a>
                 </div>
             </div>
         </div>
@@ -306,7 +248,7 @@
 
         <!-- Low Stock Alert -->
         {% if low_stock_items %}
-        <div class="card border-danger shadow-sm">
+        <div class="card border-danger shadow-sm mb-4">
             <div class="card-header bg-danger text-white py-3">
                 <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Low Stock Alert</h6>
             </div>
@@ -323,13 +265,37 @@
                     {% endfor %}
                 </div>
                 <div class="card-footer bg-white">
-                    <a href="{{ url_for('main.inventory') }}" class="btn btn-sm btn-outline-danger w-100">
-                        Manage Inventory
-                    </a>
+                    <a href="{{ url_for('main.inventory') }}" class="btn btn-sm btn-outline-danger w-100">Manage
+                        Inventory</a>
                 </div>
             </div>
         </div>
         {% endif %}
+
+        <!-- Top Customers -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-trophy me-2"></i>Top Customers</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for c in top_customers %}
+                    <div class="list-group-item px-4 py-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ c.name }}</h6>
+                                <small class="text-muted">{{ c.email or c.phone }}</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ c.orders_count }}</span>
+                        </div>
+                        <div class="fw-bold text-success">PKR {{ "{:,.0f}".format(c.total_spent) }}</div>
+                    </div>
+                    {% else %}
+                    <div class="p-4 text-center text-muted">No customer data available</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
