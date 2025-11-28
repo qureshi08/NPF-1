@@ -245,7 +245,7 @@ NPF-1/
 
 For technical support or questions:
 - **GitHub Issues**: [https://github.com/qureshi08/NPF-1/issues](https://github.com/qureshi08/NPF-1/issues)
-- **Email**: [Your support email]
+- **Email**: muhammadanasq@gmail.com
 
 ## 📄 License
 
