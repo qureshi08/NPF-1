@@ -104,336 +104,316 @@
     <!-- Sales Trend -->
     <div class="col-lg-8 mb-3">
         <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-bottom py-2">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 text-primary fw-bold"><i class="fas fa-chart-area me-2"></i>Sales Trend</h6>
-                    <span class="badge bg-light text-dark">Last 7 Days</span>
+            <div class="col-lg-8">
+                <!-- Recent Orders -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white border-bottom py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 text-primary fw-bold"><i class="fas fa-shopping-bag me-2"></i>Recent Orders
+                            </h6>
+                            <a href="{{ url_for('main.orders') }}" class="btn btn-sm btn-outline-primary"
+                                style="font-size: 0.75rem;">View All</a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0" style="font-size: 0.9rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">Order</th>
+                                        <th>Date</th>
+                                        <th>Customer</th>
+                                        <th>Status</th>
+                                        <th class="text-end pe-3">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in recent_orders %}
+                                    <tr>
+                                        <td class="ps-3"><strong>#{{ order.id }}</strong></td>
+                                        <td>{{ order.order_date.strftime('%d %b') }}</td>
+                                        <td>{{ order.customer.name if order.customer else 'Walk-in' }}</td>
+                                        <td><span
+                                                class="badge bg-{{ 'success' if order.status == 'Delivered' else 'warning' if order.status == 'Pending' else 'info' }}"
+                                                style="font-size: 0.7rem;">{{ order.status }}</span></td>
+                                        <td class="text-end pe-3 fw-bold">PKR {{ "{:,.0f}".format(order.total_amount) }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="card-body p-2">
-                <div style="height: 250px; position: relative;">
-                    <canvas id="salesChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Top Products Chart -->
-    <div class="col-lg-4 mb-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-bottom py-2">
-                <h6 class="mb-0 text-primary fw-bold"><i class="fas fa-star me-2"></i>Top Products</h6>
-            </div>
-            <div class="card-body p-2">
-                <div style="height: 250px; position: relative;">
-                    <canvas id="productsChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Main Content Grid -->
-<div class="row">
-    <!-- Left Column (Tables) -->
-    <div class="col-lg-8">
-        <!-- Recent Orders -->
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white border-bottom py-2">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 text-primary fw-bold"><i class="fas fa-shopping-bag me-2"></i>Recent Orders</h6>
-                    <a href="{{ url_for('main.orders') }}" class="btn btn-sm btn-outline-primary"
-                        style="font-size: 0.75rem;">View All</a>
+                <!-- Product Profitability -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white border-bottom py-2">
+                        <h6 class="mb-0 text-primary fw-bold"><i class="fas fa-chart-bar me-2"></i>Product Profitability
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">Product</th>
+                                        <th class="text-center">Sold</th>
+                                        <th class="text-end">Revenue</th>
+                                        <th class="text-end">Profit</th>
+                                        <th class="text-center">Margin</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in products_with_profit[:8] %}
+                                    <tr>
+                                        <td class="ps-3 fw-medium text-truncate" style="max-width: 200px;">{{ p.name }}
+                                        </td>
+                                        <td class="text-center">{{ p.units_sold }}</td>
+                                        <td class="text-end">PKR {{ "{:,.0f}".format(p.revenue) }}</td>
+                                        <td class="text-end text-success fw-bold">PKR {{ "{:,.0f}".format(p.profit) }}
+                                        </td>
+                                        <td class="text-center">
+                                            <span
+                                                class="badge bg-{{ 'success' if p.margin > 20 else 'warning' if p.margin > 10 else 'danger' }}"
+                                                style="font-size: 0.7rem;">{{ "{:.1f}".format(p.margin) }}%</span>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-3 text-muted">No sales data available</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0" style="font-size: 0.9rem;">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="ps-3">Order</th>
-                                <th>Date</th>
-                                <th>Customer</th>
-                                <th>Status</th>
-                                <th class="text-end pe-3">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for order in recent_orders %}
-                            <tr>
-                                <td class="ps-3"><strong>#{{ order.id }}</strong></td>
-                                <td>{{ order.order_date.strftime('%d %b') }}</td>
-                                <td>{{ order.customer.name if order.customer else 'Walk-in' }}</td>
-                                <td><span
-                                        class="badge bg-{{ 'success' if order.status == 'Delivered' else 'warning' if order.status == 'Pending' else 'info' }}"
-                                        style="font-size: 0.7rem;">{{ order.status }}</span></td>
-                                <td class="text-end pe-3 fw-bold">PKR {{ "{:,.0f}".format(order.total_amount) }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 
-        <!-- Product Profitability -->
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white border-bottom py-2">
-                <h6 class="mb-0 text-primary fw-bold"><i class="fas fa-chart-bar me-2"></i>Product Profitability</h6>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.9rem;">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="ps-3">Product</th>
-                                <th class="text-center">Sold</th>
-                                <th class="text-end">Revenue</th>
-                                <th class="text-end">Profit</th>
-                                <th class="text-center">Margin</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for p in products_with_profit[:8] %}
-                            <tr>
-                                <td class="ps-3 fw-medium text-truncate" style="max-width: 200px;">{{ p.name }}</td>
-                                <td class="text-center">{{ p.units_sold }}</td>
-                                <td class="text-end">PKR {{ "{:,.0f}".format(p.revenue) }}</td>
-                                <td class="text-end text-success fw-bold">PKR {{ "{:,.0f}".format(p.profit) }}</td>
-                                <td class="text-center">
+            <!-- Right Column (Lists) -->
+            <div class="col-lg-4">
+                <!-- Active Production -->
+                {% if active_jobs_list %}
+                <div class="card border-info shadow-sm mb-3">
+                    <div class="card-header bg-info text-white py-2">
+                        <h6 class="mb-0"><i class="fas fa-hammer me-2"></i>Active Production</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for job in active_jobs_list %}
+                            <div class="list-group-item px-3 py-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-truncate" style="max-width: 140px; font-size: 0.9rem;">{{
+                                        job.product_name }}</strong>
                                     <span
-                                        class="badge bg-{{ 'success' if p.margin > 20 else 'warning' if p.margin > 10 else 'danger' }}"
-                                        style="font-size: 0.7rem;">{{ "{:.1f}".format(p.margin) }}%</span>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="5" class="text-center py-3 text-muted">No sales data available</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Right Column (Lists) -->
-    <div class="col-lg-4">
-        <!-- Active Production -->
-        {% if active_jobs_list %}
-        <div class="card border-info shadow-sm mb-3">
-            <div class="card-header bg-info text-white py-2">
-                <h6 class="mb-0"><i class="fas fa-hammer me-2"></i>Active Production</h6>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    {% for job in active_jobs_list %}
-                    <div class="list-group-item px-3 py-2">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <strong class="text-truncate" style="max-width: 140px; font-size: 0.9rem;">{{
-                                job.product_name }}</strong>
-                            <span
-                                class="badge bg-{{ 'primary' if job.status == 'In Progress' else 'warning' }} rounded-pill"
-                                style="font-size: 0.65rem;">{{ job.status }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center" style="font-size: 0.8rem;">
-                            <small class="text-muted"><i class="fas fa-user me-1"></i>{{ job.assigned_worker }}</small>
-                            <small class="text-muted"><i class="fas fa-calendar me-1"></i>{{ job.due_date.strftime('%d
-                                %b') }}</small>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="card-footer bg-white py-2">
-                    <a href="{{ url_for('main.production') }}" class="btn btn-sm btn-outline-info w-100"
-                        style="font-size: 0.8rem;">View All Jobs</a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Low Stock Alert -->
-        {% if low_stock_items %}
-        <div class="card border-danger shadow-sm mb-3">
-            <div class="card-header bg-danger text-white py-2">
-                <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Low Stock Alert</h6>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    {% for item in low_stock_items[:5] %}
-                    <div class="list-group-item px-3 py-2 d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong class="d-block" style="font-size: 0.9rem;">{{ item.name }}</strong>
-                            <small class="text-muted" style="font-size: 0.8rem;">Reorder: {{ item.reorder_level
-                                }}</small>
-                        </div>
-                        <span class="badge bg-danger rounded-pill">{{ item.stock_quantity }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="card-footer bg-white py-2">
-                    <a href="{{ url_for('main.inventory') }}" class="btn btn-sm btn-outline-danger w-100"
-                        style="font-size: 0.8rem;">Manage Inventory</a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Top Customers -->
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white border-bottom py-2">
-                <h6 class="mb-0 text-primary fw-bold"><i class="fas fa-trophy me-2"></i>Top Customers</h6>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    {% for c in top_customers %}
-                    <div class="list-group-item px-3 py-2">
-                        <div class="d-flex justify-content-between align-items-start mb-1">
-                            <div>
-                                <h6 class="mb-0 fw-bold" style="font-size: 0.9rem;">{{ c.name }}</h6>
-                                <small class="text-muted" style="font-size: 0.8rem;">{{ c.email or c.phone }}</small>
+                                        class="badge bg-{{ 'primary' if job.status == 'In Progress' else 'warning' }} rounded-pill"
+                                        style="font-size: 0.65rem;">{{ job.status }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center"
+                                    style="font-size: 0.8rem;">
+                                    <small class="text-muted"><i class="fas fa-user me-1"></i>{{ job.assigned_worker
+                                        }}</small>
+                                    <small class="text-muted"><i class="fas fa-calendar me-1"></i>{{
+                                        job.due_date.strftime('%d
+                                        %b') }}</small>
+                                </div>
                             </div>
-                            <span class="badge bg-primary rounded-pill" style="font-size: 0.7rem;">{{ c.orders_count
-                                }}</span>
+                            {% endfor %}
                         </div>
-                        <div class="fw-bold text-success" style="font-size: 0.85rem;">PKR {{
-                            "{:,.0f}".format(c.total_spent) }}</div>
+                        <div class="card-footer bg-white py-2">
+                            <a href="{{ url_for('main.production') }}" class="btn btn-sm btn-outline-info w-100"
+                                style="font-size: 0.8rem;">View All Jobs</a>
+                        </div>
                     </div>
-                    {% else %}
-                    <div class="p-3 text-center text-muted" style="font-size: 0.9rem;">No customer data available</div>
-                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Low Stock Alert -->
+                {% if low_stock_items %}
+                <div class="card border-danger shadow-sm mb-3">
+                    <div class="card-header bg-danger text-white py-2">
+                        <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Low Stock Alert</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for item in low_stock_items[:5] %}
+                            <div class="list-group-item px-3 py-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="d-block" style="font-size: 0.9rem;">{{ item.name }}</strong>
+                                    <small class="text-muted" style="font-size: 0.8rem;">Reorder: {{ item.reorder_level
+                                        }}</small>
+                                </div>
+                                <span class="badge bg-danger rounded-pill">{{ item.stock_quantity }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="card-footer bg-white py-2">
+                            <a href="{{ url_for('main.inventory') }}" class="btn btn-sm btn-outline-danger w-100"
+                                style="font-size: 0.8rem;">Manage Inventory</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Top Customers -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white border-bottom py-2">
+                        <h6 class="mb-0 text-primary fw-bold"><i class="fas fa-trophy me-2"></i>Top Customers</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for c in top_customers %}
+                            <div class="list-group-item px-3 py-2">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold" style="font-size: 0.9rem;">{{ c.name }}</h6>
+                                        <small class="text-muted" style="font-size: 0.8rem;">{{ c.email or c.phone
+                                            }}</small>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill" style="font-size: 0.7rem;">{{
+                                        c.orders_count
+                                        }}</span>
+                                </div>
+                                <div class="fw-bold text-success" style="font-size: 0.85rem;">PKR {{
+                                    "{:,.0f}".format(c.total_spent) }}</div>
+                            </div>
+                            {% else %}
+                            <div class="p-3 text-center text-muted" style="font-size: 0.9rem;">No customer data
+                                available</div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-{% endblock %}
+        {% endblock %}
 
-{% block scripts %}
-<script>
-    // Sales Trend Chart
-    const salesCtx = document.getElementById('salesChart').getContext('2d');
-    new Chart(salesCtx, {
-        type: 'line',
-        data: {
-            labels: {{ sales_dates | tojson }},
-        datasets: [{
-            label: 'Daily Sales',
-            data: {{ sales_amounts | tojson }},
-        borderColor: '#667eea',
-        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-        tension: 0.4,
-        fill: true,
-        borderWidth: 2,
-        pointRadius: 3,
-        pointHoverRadius: 5,
-        pointBackgroundColor: '#667eea',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#667eea'
+        {% block scripts %}
+        <script>
+            // Sales Trend Chart
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: {{ sales_dates | tojson }},
+                datasets: [{
+                    label: 'Daily Sales',
+                    data: {{ sales_amounts | tojson }},
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                fill: true,
+                borderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                pointBackgroundColor: '#667eea',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#667eea'
             }]
         },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            },
-            tooltip: {
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                padding: 10,
-                titleFont: {
-                    size: 13
-                },
-                bodyFont: {
-                    size: 12
-                },
-                callbacks: {
-                    label: function (context) {
-                        return 'Sales: PKR ' + context.parsed.y.toLocaleString();
-                    }
-                }
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    font: {
-                        size: 11
+                options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
                     },
-                    callback: function (value) {
-                        return 'PKR ' + value.toLocaleString();
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 10,
+                        titleFont: {
+                            size: 13
+                        },
+                        bodyFont: {
+                            size: 12
+                        },
+                        callbacks: {
+                            label: function (context) {
+                                return 'Sales: PKR ' + context.parsed.y.toLocaleString();
+                            }
+                        }
                     }
                 },
-                grid: {
-                    borderDash: [5, 5],
-                    color: 'rgba(0, 0, 0, 0.05)'
-                }
-            },
-            x: {
-                ticks: {
-                    font: {
-                        size: 11
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 11
+                            },
+                            callback: function (value) {
+                                return 'PKR ' + value.toLocaleString();
+                            }
+                        },
+                        grid: {
+                            borderDash: [5, 5],
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
                     }
-                },
-                grid: {
-                    display: false
                 }
             }
-        }
-    }
     });
 
-    // Top Products Doughnut Chart
-    const productsCtx = document.getElementById('productsChart').getContext('2d');
-    new Chart(productsCtx, {
-        type: 'doughnut',
-        data: {
-            labels: [{% for p in top_products_chart %}"{{ p.name }}",{% endfor %}],
-        datasets: [{
-            data: [{% for p in top_products_chart %}{{ p.revenue }}, {% endfor %}],
-        backgroundColor: [
-        '#667eea',
-        '#11998e',
-        '#fa709a',
-        '#f093fb',
-        '#fee140'
-    ],
-        borderWidth: 0,
-        hoverOffset: 10
+            // Top Products Doughnut Chart
+            const productsCtx = document.getElementById('productsChart').getContext('2d');
+            new Chart(productsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [{% for p in top_products_chart %}"{{ p.name }}",{% endfor %}],
+                datasets: [{
+                    data: [{% for p in top_products_chart %}{{ p.revenue }}, {% endfor %}],
+                backgroundColor: [
+                '#667eea',
+                '#11998e',
+                '#fa709a',
+                '#f093fb',
+                '#fee140'
+            ],
+                borderWidth: 0,
+                hoverOffset: 10
             }]
         },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    boxWidth: 10,
-                    padding: 10,
-                    font: {
-                        size: 10
-                    }
-                }
-            },
-            tooltip: {
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                padding: 10,
-                bodyFont: {
-                    size: 12
-                },
-                callbacks: {
-                    label: function (context) {
-                        return context.label + ': PKR ' + context.parsed.toLocaleString();
+                options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 10,
+                            padding: 10,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 10,
+                        bodyFont: {
+                            size: 12
+                        },
+                        callbacks: {
+                            label: function (context) {
+                                return context.label + ': PKR ' + context.parsed.toLocaleString();
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
     });
-</script>
-{% endblock %}
+        </script>
+        {% endblock %}
