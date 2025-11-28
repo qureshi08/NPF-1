@@ -1,11 +1,22 @@
+# Core Framework
 Flask==3.0.0
 Flask-SQLAlchemy==3.1.1
 Flask-Login==0.6.3
 Flask-WTF==1.2.1
+
+# Utilities
 email_validator==2.1.0.post1
+python-dotenv==1.0.0
+
+# Data Processing & Export
 pandas>=2.2.2
 openpyxl==3.1.2
-python-dotenv==1.0.0
+
+# PDF Generation
 reportlab==4.0.7
+
+# Production Server
 gunicorn==21.2.0
+
+# Database
 psycopg2==2.9.9

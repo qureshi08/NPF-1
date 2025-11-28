@@ -1,128 +1,266 @@
-# 🪑 New Pindi Furniture - ERP System
+# New Pindi Furniture - Inventory Management System
 
-A modern, feature-rich Enterprise Resource Planning (ERP) system for furniture businesses, built with Flask and premium UI/UX.
+A comprehensive web-based inventory and business management system built with Flask for furniture manufacturing and retail operations.
+
+## 🚀 Live Application
+
+**Production URL**: [https://new-pindi-furniture.onrender.com](https://new-pindi-furniture.onrender.com)
 
 ## ✨ Features
 
-- **📊 Dashboard** - Real-time KPIs, sales trends, and business insights
-- **📦 Inventory Management** - Track products, stock levels, and categories
-- **🛒 Order Management** - Process orders, generate invoices (PDF)
-- **🏭 Production Tracking** - Monitor production jobs and workflows
-- **👥 Customer Management** - Customer database with loyalty points
-- **🚚 Supplier Management** - Supplier contacts and purchase tracking
-- **💰 Finance & Accounting** - Income/expense tracking, profit analysis
-- **📈 Reports** - Comprehensive business reports and analytics
-- **👤 User Management** - Role-based access (Admin/Staff)
+### Core Modules
+- **📦 Inventory Management** - Track products, stock levels, and reorder points
+- **🛒 Order Management** - Create, track, and manage customer orders with PDF invoices
+- **🏭 Production Tracking** - Monitor production jobs and workshop activities
+- **👥 Customer Management** - Maintain customer database and order history
+- **🚚 Supplier Management** - Track suppliers and procurement
+- **💰 Finance Module** - Transaction tracking and financial reporting (Admin only)
+- **📊 Reports & Analytics** - Export data and view business insights (Admin only)
+- **👤 User Management** - Role-based access control (Admin/Staff/Workshop)
 
-## 🎨 Premium Design
+### Key Features
+- **Role-Based Access Control (RBAC)** - Secure access based on user roles
+- **Real-time Notifications** - Low stock alerts and system notifications
+- **Data Export** - Export products, orders, and transactions to Excel
+- **PDF Invoice Generation** - Professional invoices for customer orders
+- **Dashboard Analytics** - Charts and KPIs for business insights
+- **Mobile Responsive** - Works seamlessly on desktop, tablet, and mobile
+- **Dark Mode Sidebar** - Modern, professional UI design
 
-- Modern, rich animations with smooth transitions
-- Responsive design that works on all devices
-- Gradient backgrounds and sophisticated color schemes
-- Professional typography with Inter font
-- Elegant hover effects and micro-interactions
+## 🔐 User Roles
 
-## 🚀 Quick Start (Local)
+### Admin
+- Full system access
+- User management
+- Finance and reporting
+- All CRUD operations
 
-1. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Staff
+- Inventory management
+- Order processing
+- Customer and supplier management
+- Production tracking
+- **No access** to finance, reports, or user management
 
-2. **Initialize Database**
-   ```bash
-   python init_db.py
-   ```
+### Workshop
+- Production job tracking
+- Basic inventory viewing
 
-3. **Run Application**
-   ```bash
-   python run.py
-   ```
+## 🛠️ Technology Stack
 
-4. **Access Application**
-   - URL: http://localhost:5000
-   - Admin: username: `admin`, password: `admin123`
-   - Staff: username: `staff`, password: `staff123`
+- **Backend**: Flask (Python)
+- **Database**: PostgreSQL (Production) / SQLite (Development)
+- **Frontend**: Bootstrap 5, Chart.js
+- **Deployment**: Render.com
+- **Version Control**: Git/GitHub
 
-## 🌐 Deploy Online (Free)
+## 📋 Installation & Setup
 
-### Option 1: Render (Recommended)
-1. Run the preparation script:
-   ```bash
-   .\deploy-prepare.ps1
-   ```
+### Prerequisites
+- Python 3.11+
+- PostgreSQL (for production)
+- Git
 
-2. Create GitHub repository and push code
+### Local Development Setup
 
-3. Deploy on Render:
-   - Go to https://render.com
-   - Sign up (free)
-   - Click "New +" → "Web Service"
-   - Connect your GitHub repository
+1. **Clone the repository**
+```bash
+git clone https://github.com/qureshi08/NPF-1.git
+cd NPF-1
+```
+
+2. **Create virtual environment**
+```bash
+python -m venv venv
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Linux/Mac
+```
+
+3. **Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+4. **Initialize the database**
+```bash
+python init_db.py
+```
+
+5. **Run the application**
+```bash
+python run.py
+```
+
+6. **Access the application**
+- Open browser: `http://localhost:5000`
+- Default Admin: `admin` / `admin123`
+- Default Staff: `staff` / `staff123`
+
+## 🚀 Production Deployment (Render.com)
+
+### First-Time Setup
+
+1. **Create Render Account** at [render.com](https://render.com)
+
+2. **Create PostgreSQL Database**
+   - New → PostgreSQL
+   - Name: `npf-database`
+   - Copy the **Internal Database URL**
+
+3. **Create Web Service**
+   - New → Web Service
+   - Connect GitHub repository: `qureshi08/NPF-1`
+   - Settings:
+     - **Name**: `new-pindi-furniture`
+     - **Environment**: `Python 3`
+     - **Build Command**: `./build.sh`
+     - **Start Command**: `gunicorn run:app`
+
+4. **Environment Variables**
+   - `DATABASE_URL`: [Paste Internal Database URL]
+   - `SECRET_KEY`: [Generate random string]
+   - `FLASK_ENV`: `production`
+
+5. **Deploy**
    - Click "Create Web Service"
+   - Wait for deployment to complete
 
-4. Your app will be live at: `https://your-app-name.onrender.com`
+6. **Initialize Database** (ONE TIME ONLY)
+   - Visit: `https://new-pindi-furniture.onrender.com/init-database-secret-2024`
+   - This creates sample data and initial users
 
-### Option 2: PythonAnywhere
-- Always-on free hosting
-- Perfect for SQLite database
-- See `DEPLOYMENT.md` for full instructions
+### Automatic Deployments
 
-### Option 3: Railway
-- Modern platform with auto-deployments
-- Free PostgreSQL database included
-- See `DEPLOYMENT.md` for full instructions
+- Push to `main` branch triggers automatic deployment
+- Deployment takes ~2-3 minutes
 
-## 📖 Full Deployment Guide
+## 👥 Default User Accounts
 
-See **[DEPLOYMENT.md](DEPLOYMENT.md)** for detailed step-by-step instructions for all platforms.
+After database initialization:
 
-## 🛠️ Tech Stack
+| Username | Password | Role | Access Level |
+|----------|----------|------|--------------|
+| admin | admin123 | Admin | Full Access |
+| staff | staff123 | Staff | Limited Access |
 
-- **Backend**: Flask 3.0, SQLAlchemy
-- **Frontend**: Bootstrap 5, Chart.js, Font Awesome
-- **Database**: SQLite (local) / PostgreSQL (production)
-- **Authentication**: Flask-Login
-- **PDF Generation**: ReportLab
-- **Excel Export**: Pandas, OpenPyXL
+**⚠️ IMPORTANT**: Change these passwords immediately after first login!
+
+## 📖 User Guide
+
+### For Administrators
+
+1. **User Management**
+   - Navigate to: Users (sidebar)
+   - Create new users with appropriate roles
+   - Edit or delete existing users
+   - Change user passwords
+
+2. **Finance Management**
+   - Navigate to: Finance (sidebar)
+   - Add income/expense transactions
+   - View financial reports
+   - Track revenue and profitability
+
+3. **Reports & Analytics**
+   - Export products to Excel
+   - Export orders to Excel
+   - Export transactions to Excel
+   - View dashboard analytics
+
+### For All Users
+
+1. **Inventory Management**
+   - Add/Edit/Delete products
+   - Track stock levels
+   - Set reorder points
+   - Receive low stock alerts
+
+2. **Order Processing**
+   - Create new orders
+   - Update order status
+   - Generate PDF invoices
+   - Track order history
+
+3. **Customer Management**
+   - Add customer information
+   - View customer order history
+   - Update customer details
+
+4. **Production Tracking**
+   - Create production jobs
+   - Update job status
+   - Track completion
+
+## 🔒 Security Features
+
+- Password hashing with Werkzeug
+- Role-based access control (RBAC)
+- Protected routes with decorators
+- Session management with Flask-Login
+- CSRF protection
+- SQL injection prevention (SQLAlchemy ORM)
 
 ## 📁 Project Structure
 
 ```
-NPF 1/
+NPF-1/
 ├── app/
-│   ├── __init__.py          # App factory
-│   ├── models.py            # Database models
-│   ├── routes.py            # Application routes
-│   ├── forms.py             # WTForms
-│   ├── utils.py             # Utility functions
-│   ├── static/
-│   │   └── style.css        # Premium animations & styles
-│   └── templates/           # HTML templates
-├── config.py                # Configuration
-├── run.py                   # Application entry point
-├── init_db.py               # Database initialization
-├── requirements.txt         # Python dependencies
-├── Procfile                 # Deployment configuration
-└── DEPLOYMENT.md            # Deployment guide
-
+│   ├── templates/          # HTML templates
+│   ├── static/            # CSS, JS, images
+│   ├── models.py          # Database models
+│   ├── routes.py          # Application routes
+│   └── __init__.py        # App initialization
+├── instance/              # Instance-specific files
+├── build.sh              # Render build script
+├── config.py             # Configuration
+├── init_db.py            # Database initialization
+├── requirements.txt      # Python dependencies
+├── run.py               # Application entry point
+├── Procfile             # Render process file
+├── runtime.txt          # Python version
+├── FEATURES.md          # Detailed feature list
+├── HANDOVER_CHECKLIST.md # Client handover guide
+└── README.md            # This file
 ```
 
-## 🔒 Security Notes
+## 🐛 Troubleshooting
 
-- Change `SECRET_KEY` in production
-- Use environment variables for sensitive data
-- Enable HTTPS in production
-- Regularly update dependencies
+### Database Issues
+- **Problem**: Database not initialized
+- **Solution**: Visit `/init-database-secret-2024` route once
 
-## 📝 License
+### Login Issues
+- **Problem**: Cannot login
+- **Solution**: Ensure database is initialized with default users
 
-This project is for educational and commercial use.
+### Deployment Issues
+- **Problem**: App not loading on Render
+- **Solution**: Check Render logs for errors, verify environment variables
 
-## 🤝 Support
+### Performance Issues
+- **Problem**: Slow first load
+- **Solution**: Render free tier sleeps after inactivity (~30s wake time)
 
-For issues or questions, please create an issue in the repository.
+## 📞 Support
+
+For technical support or questions:
+- **GitHub Issues**: [https://github.com/qureshi08/NPF-1/issues](https://github.com/qureshi08/NPF-1/issues)
+- **Email**: [Your support email]
+
+## 📄 License
+
+This project is proprietary software developed for New Pindi Furniture.
+
+## 🙏 Acknowledgments
+
+- Built with Flask framework
+- UI powered by Bootstrap 5
+- Charts by Chart.js
+- Icons by Font Awesome
+- Deployed on Render.com
 
 ---
 
-**Made with ❤️ for New Pindi Furniture**
+**Version**: 1.0.0  
+**Last Updated**: November 2025  
+**Status**: Production Ready ✅
