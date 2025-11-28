@@ -1105,6 +1105,90 @@ def audit_log():
     return render_template('settings/audit_log.html', logs=logs, 
                           user_filter=user_filter, action_filter=action_filter)
 
+# ==================== USER MANAGEMENT ROUTES ====================
+
+@main_bp.route('/settings/users')
+@login_required
+@role_required('Admin')
+def manage_users():
+    users = User.query.all()
+    return render_template('settings/manage_users.html', users=users)
+
+@main_bp.route('/settings/users/add', methods=['POST'])
+@login_required
+@role_required('Admin')
+def add_user():
+    username = request.form.get('username')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    role = request.form.get('role')
+    
+    if User.query.filter_by(username=username).first():
+        flash('Username already exists', 'danger')
+        return redirect(url_for('main.manage_users'))
+        
+    if User.query.filter_by(email=email).first():
+        flash('Email already exists', 'danger')
+        return redirect(url_for('main.manage_users'))
+        
+    if len(password) < 8:
+        flash('Password must be at least 8 characters long', 'danger')
+        return redirect(url_for('main.manage_users'))
+        
+    user = User(username=username, email=email, role=role)
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+    
+    log_action(f"Created user: {username} ({role})", "User", user.id)
+    flash(f'User {username} created successfully', 'success')
+    return redirect(url_for('main.manage_users'))
+
+@main_bp.route('/settings/users/edit/<int:id>', methods=['POST'])
+@login_required
+@role_required('Admin')
+def edit_user(id):
+    user = User.query.get_or_404(id)
+    
+    # Prevent modifying own role to avoid locking self out
+    if user.id == current_user.id and request.form.get('role') != 'Admin':
+        flash('You cannot change your own role from Admin', 'warning')
+        return redirect(url_for('main.manage_users'))
+        
+    user.username = request.form.get('username')
+    user.email = request.form.get('email')
+    user.role = request.form.get('role')
+    
+    password = request.form.get('password')
+    if password:
+        if len(password) < 8:
+            flash('Password must be at least 8 characters long', 'danger')
+            return redirect(url_for('main.manage_users'))
+        user.set_password(password)
+        
+    db.session.commit()
+    log_action(f"Updated user: {user.username}", "User", user.id)
+    flash(f'User {user.username} updated successfully', 'success')
+    return redirect(url_for('main.manage_users'))
+
+@main_bp.route('/settings/users/delete/<int:id>', methods=['POST'])
+@login_required
+@role_required('Admin')
+def delete_user(id):
+    user = User.query.get_or_404(id)
+    
+    if user.id == current_user.id:
+        flash('You cannot delete your own account', 'danger')
+        return redirect(url_for('main.manage_users'))
+        
+    username = user.username
+    db.session.delete(user)
+    db.session.commit()
+    
+    log_action(f"Deleted user: {username}", "User", id)
+    flash(f'User {username} deleted successfully', 'success')
+    return redirect(url_for('main.manage_users'))
+
 @main_bp.route('/update-schema-2024')
 def update_schema():
     try:
