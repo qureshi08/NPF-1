@@ -111,6 +111,7 @@ def index():
     pending_orders = Order.query.filter_by(status='Pending').count()
     low_stock_count = Product.query.filter(Product.stock_quantity <= Product.reorder_level).count()
     active_jobs = ProductionJob.query.filter(ProductionJob.status != 'Finished').count()
+    active_jobs_list = ProductionJob.query.filter(ProductionJob.status != 'Finished').order_by(ProductionJob.due_date).limit(5).all()
     
     recent_orders = Order.query.order_by(Order.order_date.desc()).limit(5).all()
     low_stock_items = get_low_stock_items()[:5]
@@ -188,6 +189,7 @@ def index():
                            pending_orders=pending_orders, 
                            low_stock_count=low_stock_count,
                            active_jobs=active_jobs,
+                           active_jobs_list=active_jobs_list,
                            recent_orders=recent_orders,
                            low_stock_items=low_stock_items,
                            sales_dates=sales_dates,
