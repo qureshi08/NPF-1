@@ -768,6 +768,7 @@ def delete_job(id):
 
 @main_bp.route('/finance')
 @login_required
+@role_required('Admin')
 def finance():
     page = request.args.get('page', 1, type=int)
     type_filter = request.args.get('type', '')
@@ -793,7 +794,7 @@ def finance():
 
 @main_bp.route('/finance/add', methods=['GET', 'POST'])
 @login_required
-@role_required('Admin', 'Staff')
+@role_required('Admin')
 def add_transaction():
     form = TransactionForm()
     if form.validate_on_submit():
@@ -861,6 +862,7 @@ def delete_transaction(id):
 
 @main_bp.route('/reports')
 @login_required
+@role_required('Admin')
 def reports():
     # --- Existing Reports Logic ---
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
@@ -947,6 +949,7 @@ def reports():
 
 @main_bp.route('/reports/export/products')
 @login_required
+@role_required('Admin')
 def export_products():
     products = Product.query.all()
     data = [[p.sku, p.name, p.category.name if p.category else '', 
@@ -965,6 +968,7 @@ def export_products():
 
 @main_bp.route('/reports/export/orders')
 @login_required
+@role_required('Admin')
 def export_orders():
     orders = Order.query.all()
     data = [[f'#{o.id}', o.order_date.strftime('%Y-%m-%d'), 
@@ -984,6 +988,7 @@ def export_orders():
 
 @main_bp.route('/reports/export/transactions')
 @login_required
+@role_required('Admin')
 def export_transactions():
     transactions = Transaction.query.all()
     data = [[t.date.strftime('%Y-%m-%d'), t.type, t.category, 
